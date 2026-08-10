@@ -92,6 +92,10 @@ $ echo '<受け取った公開鍵の1行>' | bin/ghost trust yamada
 $ bin/ghost publish work
 # → tmux new-session -A -s work claude
 
+# "--" の後ろはそのまま claude へスルーパスされる
+$ bin/ghost publish work -- --dangerously-skip-permissions
+# → tmux new-session -A -s work claude --dangerously-skip-permissions
+
 # Ghost Client側で、登録が済んでいれば
 $ bin/ghost join dev-yamada work
 # → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work

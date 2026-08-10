@@ -92,6 +92,10 @@ Then sharing a live Claude Code session over the LAN via tmux + SSH:
 $ bin/ghost publish work
 # → tmux new-session -A -s work claude
 
+# anything after "--" is passed straight through to claude
+$ bin/ghost publish work -- --dangerously-skip-permissions
+# → tmux new-session -A -s work claude --dangerously-skip-permissions
+
 # on the Ghost Client, once trusted
 $ bin/ghost join dev-yamada work
 # → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
