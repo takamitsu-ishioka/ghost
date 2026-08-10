@@ -105,6 +105,8 @@ Example: initialize.sh
       ```
     - The functional description is taken from the run of comment lines starting at line 2 of the bash script
   - Whether it fails or succeeds, output "what to do next" to stderr.
+- Language/format conversion
+  - Preserve line breaks as much as possible. For example, when going Japanese markdown → English markdown → rendered view, line breaks that were originally there must be preserved.
 
 ---
 
