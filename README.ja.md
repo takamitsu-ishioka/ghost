@@ -35,8 +35,6 @@ Claude Code の UI は本質的に「stdin からキーイベントを受け取�
 - [x] `ghost ls` — Ghostを探す
 - [x] `ghost join` — Ghostに接続する
 - [x] `ghost publish` — 自分のGhostを公開
-- [ ] `ghost ask` — Ghostに問い合わせる
-- [ ] `ghost interview` — Ghostを取材する
 
 複数の ghost が相互接続されるネットワークを **GhostNet** と呼びます。
 
@@ -110,4 +108,4 @@ $ ghost join dev-yamada.local work
 
 ## 現在の状態
 
-`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。
+`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。設計の議論は `idea.ja.md` / `idea.md` を参照してください。

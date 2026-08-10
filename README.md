@@ -35,8 +35,6 @@ Checked items are already implemented:
 - [x] `ghost ls` — find a Ghost
 - [x] `ghost join` — connect to a Ghost
 - [x] `ghost publish` — publish your own Ghost
-- [ ] `ghost ask` — query a Ghost
-- [ ] `ghost interview` — interview a Ghost
 
 A network of interconnected ghosts is called **GhostNet**.
 
@@ -110,4 +108,4 @@ Run `ghost` with no arguments to see the available subcommands.
 
 ## Current status
 
-`ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented. `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.
+`ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented — see `idea.md` / `idea.ja.md` for the design discussion behind the project.
