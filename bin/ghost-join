@@ -1,0 +1,26 @@
+#!/bin/bash
+# 指定したホスト上の、指定したセッション名の tmux セッションに SSH 経由でアタッチする。
+set -euo pipefail
+
+BASENAME="$(basename "$0")"
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME <host> <session_name>"
+    echo "example: $BASENAME dev-yamada work"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+  } >&2
+}
+
+if [ "$#" -ne 2 ]; then
+  usage "Wrong number of arguments"
+  exit 1
+fi
+
+host="$1"
+session_name="$2"
+
+echo "joining: ssh -t $host tmux attach -t $session_name" >&2
+exec ssh -t "$host" "tmux attach -t $session_name"

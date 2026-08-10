@@ -62,6 +62,22 @@ This isn't just a concept — `idea.md` includes, at the end, real examples of t
 
 The annotations in `idea.md` such as "Core Premise 1" and "Core Premise 3 - DJC" link to [`CLAUDE.md`](./CLAUDE.md) at the root of this repository. It's a real copy of the developer's global `~/.claude/CLAUDE.en.md` (the English translation of `~/.claude/CLAUDE.md`), synced from `_CLAUDE.en.md` (a symlink to that file, `.gitignore`d) via [`claude_md_sync.sh`](./claude_md_sync.sh). The Japanese original is likewise tracked as [`CLAUDE.ja.md`](./CLAUDE.ja.md), synced from `_CLAUDE.md`. Since git pushes a symlink as a symlink rather than its target's content, what actually ships in the repository is the synced copy, not the link itself.
 
+## Usage
+
+The `ghost` CLI lives in [`bin/`](./bin). So far it implements the two commands the whole idea depends on — sharing a live Claude Code session over the LAN via tmux + SSH:
+
+```bash
+# on the machine running Claude Code
+$ bin/ghost publish work
+# → tmux new-session -A -s work claude
+
+# from another machine on the LAN
+$ bin/ghost join dev-yamada work
+# → ssh -t dev-yamada tmux attach -t work
+```
+
+Run `bin/ghost` with no arguments to see the available subcommands.
+
 ## Current status
 
-At this point the repository is just the concept notes (`idea.md` / `idea.ja.md`) and example images (`images/`) — the `ghost` CLI itself hasn't been implemented yet. That's planned for later.
+`ghost publish` / `ghost join` (the tmux + SSH PTY-sharing primitive) are implemented. `ghost ls` (LAN discovery), `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.

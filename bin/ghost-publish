@@ -1,0 +1,26 @@
+#!/bin/bash
+# 指定したセッション名で Claude Code を実行する tmux セッションを作成する。
+# 既に同名セッションが存在する場合はそれにアタッチする（tmux new-session -A）。
+set -euo pipefail
+
+BASENAME="$(basename "$0")"
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME <session_name>"
+    echo "example: $BASENAME work"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+  } >&2
+}
+
+if [ "$#" -ne 1 ]; then
+  usage "Wrong number of arguments"
+  exit 1
+fi
+
+session_name="$1"
+
+echo "publishing: tmux new-session -A -s $session_name claude" >&2
+exec tmux new-session -A -s "$session_name" claude

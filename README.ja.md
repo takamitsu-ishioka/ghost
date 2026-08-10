@@ -62,6 +62,22 @@ PM Ghost ── Yamada Ghost
 
 `idea.ja.md` 中の「大前提1」「大前提3 - DJC」等の注記は、このリポジトリ直下の [`CLAUDE.ja.md`](./CLAUDE.ja.md) にリンクしています。これは山田喜三郎のグローバル `~/.claude/CLAUDE.md` の実体コピーで、`_CLAUDE.md`（同ファイルへのシンボリックリンク、`.gitignore` 対象）から [`claude_md_sync.sh`](./claude_md_sync.sh) で同期しています。英語版正本 `CLAUDE.md` は同様に `~/.claude/CLAUDE.en.md`（`_CLAUDE.en.md`）から同期されます。git はシンボリックリンクをリンクのまま push してしまうため、リポジトリに含めて公開するのは同期後の実体です。
 
+## 使い方
+
+`ghost` CLI は [`bin/`](./bin) にあります。現時点では、構想の土台となる「tmux + SSH でLAN越しにClaude Codeのセッションを共有する」部分、すなわち2コマンドのみ実装しています。
+
+```bash
+# Claude Codeを実行する側のマシンで
+$ bin/ghost publish work
+# → tmux new-session -A -s work claude
+
+# LAN内の別マシンから
+$ bin/ghost join dev-yamada work
+# → ssh -t dev-yamada tmux attach -t work
+```
+
+引数なしで `bin/ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
+
 ## 現在の状態
 
-このリポジトリは現時点では構想メモ（`idea.ja.md` / `idea.md`）と実例画像（`images/`）のみで、`ghost` CLI 自体はまだ実装されていません。今後実装予定です。
+`ghost publish` / `ghost join`（tmux + SSHによるPTY共有の土台）は実装済みです。`ghost ls`（LAN内発見）、`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。

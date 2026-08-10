@@ -1,0 +1,38 @@
+#!/bin/bash
+# Ghost CLI のエントリポイント。
+# サブコマンド ghost-<name>（このスクリプトと同じディレクトリ）を実行する。
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASENAME="$(basename "$0")"
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME <subcommand> [args...]"
+    echo "example: $BASENAME publish work"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+    echo
+    echo "available subcommands:"
+    for f in "$SCRIPT_DIR"/ghost-*; do
+      [ -x "$f" ] && echo "  $(basename "$f" | sed 's/^ghost-//')"
+    done
+  } >&2
+}
+
+if [ "$#" -lt 1 ]; then
+  usage "Too few arguments"
+  exit 1
+fi
+
+subcommand="$1"
+shift
+target="$SCRIPT_DIR/ghost-$subcommand"
+
+if [ ! -x "$target" ]; then
+  usage "Unknown subcommand: $subcommand"
+  exit 1
+fi
+
+exec "$target" "$@"
