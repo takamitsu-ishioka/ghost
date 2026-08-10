@@ -81,7 +81,7 @@ $ cat ~/.ssh/id_ed25519_ghost.pub
 # → send this line to the Ghost Server's administrator
 
 # on the Ghost Server, once the key has been received
-$ echo '<the public key line>' | bin/ghost trust yamada
+$ echo '<the public key line>' | ghost trust yamada
 # → adds it to ~/.ssh/authorized_keys, skips if already trusted
 ```
 
@@ -89,19 +89,19 @@ Then sharing a live Claude Code session over the LAN via tmux + SSH:
 
 ```bash
 # on the Ghost Server (the machine running Claude Code)
-$ bin/ghost publish work
+$ ghost publish work
 # → tmux new-session -A -s work claude
 
 # anything after "--" is passed straight through to claude
-$ bin/ghost publish work -- --dangerously-skip-permissions
+$ ghost publish work -- --dangerously-skip-permissions
 # → tmux new-session -A -s work claude --dangerously-skip-permissions
 
 # on the Ghost Client, once trusted
-$ bin/ghost join dev-yamada work
+$ ghost join dev-yamada work
 # → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
 ```
 
-Run `bin/ghost` with no arguments to see the available subcommands.
+Run `ghost` with no arguments to see the available subcommands.
 
 ## Current status
 

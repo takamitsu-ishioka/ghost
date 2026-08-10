@@ -81,7 +81,7 @@ $ cat ~/.ssh/id_ed25519_ghost.pub
 # → この1行をGhost Serverの管理者に送る
 
 # Ghost Server側で、鍵を受け取ったら
-$ echo '<受け取った公開鍵の1行>' | bin/ghost trust yamada
+$ echo '<受け取った公開鍵の1行>' | ghost trust yamada
 # → ~/.ssh/authorized_keys に追加（登録済みならスキップ）
 ```
 
@@ -89,19 +89,19 @@ $ echo '<受け取った公開鍵の1行>' | bin/ghost trust yamada
 
 ```bash
 # Ghost Server（Claude Codeを実行する側のマシン）で
-$ bin/ghost publish work
+$ ghost publish work
 # → tmux new-session -A -s work claude
 
 # "--" の後ろはそのまま claude へスルーパスされる
-$ bin/ghost publish work -- --dangerously-skip-permissions
+$ ghost publish work -- --dangerously-skip-permissions
 # → tmux new-session -A -s work claude --dangerously-skip-permissions
 
 # Ghost Client側で、登録が済んでいれば
-$ bin/ghost join dev-yamada work
+$ ghost join dev-yamada work
 # → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
 ```
 
-引数なしで `bin/ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
+引数なしで `ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
 
 ## 現在の状態
 
