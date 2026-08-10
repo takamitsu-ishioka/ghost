@@ -29,14 +29,14 @@ The Claude Code UI is, at its core, "a program that keeps receiving key events f
 
 The name that captures this in one word is **Ghost** (from *Ghost in the Shell*).
 
-```text
-ghost           the whole system
-ghost ls        find a Ghost
-ghost join      connect to a Ghost
-ghost publish   publish your own Ghost
-ghost ask       query a Ghost
-ghost interview interview a Ghost
-```
+|   | Command | Description |
+|---|---|---|
+| ☑ | `ghost` | the whole system |
+| ☐ | `ghost ls` | find a Ghost |
+| ☑ | `ghost join` | connect to a Ghost |
+| ☑ | `ghost publish` | publish your own Ghost |
+| ☐ | `ghost ask` | query a Ghost |
+| ☐ | `ghost interview` | interview a Ghost |
 
 A network of interconnected ghosts is called **GhostNet**.
 

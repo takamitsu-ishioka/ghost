@@ -25,18 +25,18 @@ Claude Code の UI は本質的に「stdin からキーイベントを受け取�
       ghost なら、本人が休暇中・会議中・退職済みでも問い合わせ可能。  
 
 3. **AI 同士が取材する**  
-   PM の状況把握は、PM のエージェントが各メンバーの ghost から取材し、進捗・ブロッカーを人間の報告なしに集約する。
+   例えばプロジェクト管理者が進捗状況を把握したい場合は、そのプロジェクト管理者のエージェントが各メンバーの ghost から取材し、進捗・ブロッカーを人間の報告なしに集約することができる。
 
 これを一言で表す名前が **Ghost**（攻殻機動隊由来）です。
 
-```text
-ghost           システム全体
-ghost ls        Ghostを探す
-ghost join      Ghostに接続する
-ghost publish   自分のGhostを公開
-ghost ask       Ghostに問い合わせる
-ghost interview Ghostを取材する
-```
+|   | コマンド | 説明 |
+|---|---|---|
+| ☑ | `ghost` | システム全体 |
+| ☐ | `ghost ls` | Ghostを探す |
+| ☑ | `ghost join` | Ghostに接続する |
+| ☑ | `ghost publish` | 自分のGhostを公開 |
+| ☐ | `ghost ask` | Ghostに問い合わせる |
+| ☐ | `ghost interview` | Ghostを取材する |
 
 複数の ghost が相互接続されるネットワークを **GhostNet** と呼びます。
 
