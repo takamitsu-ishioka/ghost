@@ -50,6 +50,13 @@ PM Ghost ── Yamada Ghost
       └── Suzuki Ghost
 ```
 
+## 用語集
+
+- **Ghost** — `ghost publish` で公開される知識・作業空間。`<host> <session_name>` でアドレス指定する。
+- **Ghost Server** — `ghost publish` を実行するホスト（tmuxセッションを所有する側。joinにおけるSSHサーバー側）。
+- **Ghost Client** — `ghost join <ghost server hostname> <ghost server session name>` を実行する側（joinにおけるSSHクライアント側）。
+- **GhostNet** — publish/joinで相互接続された複数Ghostのネットワーク。
+
 ## 「本当にそんなことができるのか？」への回答
 
 構想だけでなく、実際に AI が記憶（過去の会話・決定）と実装（ファイル・git 状態という SSoT）を突き合わせて検証してから答えている例を `idea.ja.md` 末尾に収録しています。

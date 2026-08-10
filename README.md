@@ -50,6 +50,13 @@ PM Ghost ── Yamada Ghost
       └── Suzuki Ghost
 ```
 
+## Glossary
+
+- **Ghost** — a knowledge/work space published via `ghost publish`, addressable as `<host> <session_name>`.
+- **Ghost Server** — the host that runs `ghost publish` (owns the tmux session; the SSH server side of a join).
+- **Ghost Client** — the side that runs `ghost join <ghost server hostname> <ghost server session name>` (the SSH client side).
+- **GhostNet** — a network of Ghosts interconnected via publish/join.
+
 ## Answering "can it really do that?"
 
 This isn't just a concept — `idea.md` includes, at the end, real examples of the AI cross-checking memory (past conversations and decisions) against the implementation (files and git state, i.e. the SSoT) before answering.
