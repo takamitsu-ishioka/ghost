@@ -29,14 +29,14 @@ Claude Code の UI は本質的に「stdin からキーイベントを受け取�
 
 これを一言で表す名前が **Ghost**（攻殻機動隊由来）です。
 
-|   | コマンド | 説明 |
-|---|---|---|
-| ☑ | `ghost` | システム全体 |
-| ☐ | `ghost ls` | Ghostを探す |
-| ☑ | `ghost join` | Ghostに接続する |
-| ☑ | `ghost publish` | 自分のGhostを公開 |
-| ☐ | `ghost ask` | Ghostに問い合わせる |
-| ☐ | `ghost interview` | Ghostを取材する |
+チェック付きは実装済みです:
+
+- [x] `ghost` — システム全体
+- [ ] `ghost ls` — Ghostを探す
+- [x] `ghost join` — Ghostに接続する
+- [x] `ghost publish` — 自分のGhostを公開
+- [ ] `ghost ask` — Ghostに問い合わせる
+- [ ] `ghost interview` — Ghostを取材する
 
 複数の ghost が相互接続されるネットワークを **GhostNet** と呼びます。
 
