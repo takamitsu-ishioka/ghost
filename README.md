@@ -43,6 +43,10 @@ PM Ghost ── Yamada Ghost
 - 記憶の再生ではなく grep・shell で再検証してから回答（`images/recall-investigation.png`）
 - 会話履歴なしに git 履歴だけから設計意図・採用理由を再構成（`images/repo-design-intent.png`）
 
+## CLAUDE.md（大前提・DJCの出典）
+
+`idea.md` 中の「大前提1」「大前提3 - DJC」等の注記は、このリポジトリ直下の [`CLAUDE.md`](./CLAUDE.md) にリンクしています。これは開発者のグローバル `~/.claude/CLAUDE.md` の実体コピーで、`_CLAUDE.md`（同ファイルへのシンボリックリンク、`.gitignore` 対象）から [`claude_md_sync.sh`](./claude_md_sync.sh) で同期しています。git はシンボリックリンクをリンクのまま push してしまうため、リポジトリに含めて公開するのは同期後の実体（`CLAUDE.md`）です。
+
 ## 現在の状態
 
 このリポジトリは現時点では構想メモ（`idea.md`）と実例画像（`images/`）のみで、`ghost` CLI 自体はまだ実装されていません。仕様書に記載なし・今後の実装予定です。
