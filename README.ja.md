@@ -32,7 +32,7 @@ Claude Code の UI は本質的に「stdin からキーイベントを受け取�
 チェック付きは実装済みです:
 
 - [x] `ghost` — システム全体
-- [ ] `ghost ls` — Ghostを探す
+- [x] `ghost ls` — Ghostを探す
 - [x] `ghost join` — Ghostに接続する
 - [x] `ghost publish` — 自分のGhostを公開
 - [ ] `ghost ask` — Ghostに問い合わせる
@@ -85,24 +85,29 @@ $ echo '<受け取った公開鍵の1行>' | ghost trust yamada
 # → ~/.ssh/authorized_keys に追加（登録済みならスキップ）
 ```
 
-そのうえで、tmux + SSH でLAN越しにClaude Codeのセッションを共有します。
+そのうえで、tmux + SSH でLAN越しにClaude Codeのセッションを共有します。`ghost publish` はセッションをmDNS（`_ghost._tcp`）でLANにも広告し、この広告はtmuxセッション自体のライフタイムに紐付いているため、セッションを終了すると自動的に消えます。
 
 ```bash
 # Ghost Server（Claude Codeを実行する側のマシン）で
 $ ghost publish work
-# → tmux new-session -A -s work claude
+# → tmuxセッション"work"を作成（または既存にアタッチ）してclaudeを実行し、
+#   _ghost._tcp としてLANに広告する
 
 # "--" の後ろはそのまま claude へスルーパスされる
 $ ghost publish work -- --dangerously-skip-permissions
-# → tmux new-session -A -s work claude --dangerously-skip-permissions
+
+# LAN内の別マシンから、公開されているものを探す
+$ ghost ls
+SESSION                  HOST
+work                     dev-yamada.local
 
 # Ghost Client側で、登録が済んでいれば
-$ ghost join dev-yamada work
-# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
+$ ghost join dev-yamada.local work
+# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada.local tmux attach -t work
 ```
 
 引数なしで `ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
 
 ## 現在の状態
 
-`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`（セットアップとtmux + SSHによるPTY共有の土台）は実装済みです。`ghost ls`（LAN内発見）、`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。
+`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。

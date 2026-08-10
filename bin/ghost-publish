@@ -1,7 +1,10 @@
 #!/bin/bash
 # 指定したセッション名で Claude Code を実行する tmux セッションを作成する。
-# 既に同名セッションが存在する場合はそれにアタッチする（tmux new-session -A）。
+# 既に同名セッションが存在する場合はそれにアタッチする。
 # "--" の後ろに書いた引数はそのまま claude へスルーパスする。
+# セッションは avahi (_ghost._tcp) 経由でLANに広告し、ghost ls から発見できるようにする。
+# 広告は同じtmuxセッション内の別windowでavahi-publishを実行することで
+# セッション自体のライフタイムに紐付ける（セッションが消えれば広告も自動的に消える）。
 set -euo pipefail
 
 BASENAME="$(basename "$0")"
@@ -35,5 +38,15 @@ if [ "$#" -gt 0 ]; then
   claude_args=("$@")
 fi
 
-echo "publishing: tmux new-session -A -s $session_name claude ${claude_args[*]}" >&2
-exec tmux new-session -A -s "$session_name" claude "${claude_args[@]}"
+if ! tmux has-session -t "$session_name" 2>/dev/null; then
+  echo "publishing: tmux new-session -d -s $session_name claude ${claude_args[*]}" >&2
+  tmux new-session -d -s "$session_name" claude "${claude_args[@]}"
+fi
+
+if ! tmux list-windows -t "$session_name" -F '#{window_name}' 2>/dev/null | grep -qx "ghost-advertise"; then
+  tmux new-window -d -t "$session_name" -n ghost-advertise \
+    "avahi-publish -s '$session_name' _ghost._tcp 22"
+  echo "advertising: avahi-publish -s $session_name _ghost._tcp 22 (mDNS, tied to this session)" >&2
+fi
+
+exec tmux attach -t "$session_name"

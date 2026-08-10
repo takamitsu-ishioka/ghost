@@ -1,0 +1,28 @@
+#!/bin/bash
+# LAN上でghost publishされているセッションをmDNS(_ghost._tcp)経由で一覧表示する。
+set -euo pipefail
+
+BASENAME="$(basename "$0")"
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME"
+    echo "example: $BASENAME"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+  } >&2
+}
+
+if [ "$#" -ne 0 ]; then
+  usage "Wrong number of arguments"
+  exit 1
+fi
+
+printf "%-24s %s\n" "SESSION" "HOST"
+avahi-browse -r -p -t _ghost._tcp 2>/dev/null \
+  | awk -F';' '$1=="=" && $3=="IPv4" { print $4, $7 }' \
+  | sort -u \
+  | while read -r session host; do
+      printf "%-24s %s\n" "$session" "$host"
+    done

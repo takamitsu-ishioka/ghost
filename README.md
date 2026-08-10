@@ -32,7 +32,7 @@ The name that captures this in one word is **Ghost** (from *Ghost in the Shell*)
 Checked items are already implemented:
 
 - [x] `ghost` — the whole system
-- [ ] `ghost ls` — find a Ghost
+- [x] `ghost ls` — find a Ghost
 - [x] `ghost join` — connect to a Ghost
 - [x] `ghost publish` — publish your own Ghost
 - [ ] `ghost ask` — query a Ghost
@@ -85,24 +85,29 @@ $ echo '<the public key line>' | ghost trust yamada
 # → adds it to ~/.ssh/authorized_keys, skips if already trusted
 ```
 
-Then sharing a live Claude Code session over the LAN via tmux + SSH:
+Then sharing a live Claude Code session over the LAN via tmux + SSH. `ghost publish` also advertises the session on the LAN via mDNS (`_ghost._tcp`), tied to the tmux session's own lifetime — the advertisement disappears automatically once the session is killed:
 
 ```bash
 # on the Ghost Server (the machine running Claude Code)
 $ ghost publish work
-# → tmux new-session -A -s work claude
+# → creates (or attaches to) tmux session "work" running claude,
+#   and advertises it as _ghost._tcp on the LAN
 
 # anything after "--" is passed straight through to claude
 $ ghost publish work -- --dangerously-skip-permissions
-# → tmux new-session -A -s work claude --dangerously-skip-permissions
+
+# from any machine on the LAN, find what's published
+$ ghost ls
+SESSION                  HOST
+work                     dev-yamada.local
 
 # on the Ghost Client, once trusted
-$ ghost join dev-yamada work
-# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
+$ ghost join dev-yamada.local work
+# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada.local tmux attach -t work
 ```
 
 Run `ghost` with no arguments to see the available subcommands.
 
 ## Current status
 
-`ghost initialize`, `ghost trust`, `ghost publish`, and `ghost join` (setup plus the tmux + SSH PTY-sharing primitive) are implemented. `ghost ls` (LAN discovery), `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.
+`ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented. `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.

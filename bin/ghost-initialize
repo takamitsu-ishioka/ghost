@@ -1,6 +1,7 @@
 #!/bin/bash
 # ghost の動作に必要な準備を一通り行う。
-# - apt パッケージ（tmux, openssh-server, openssh-client）のインストール
+# - apt パッケージ（tmux, openssh-server, openssh-client, avahi-daemon,
+#   avahi-utils, libnss-mdns）のインストール
 # - このスクリプトのある bin/ を ~/.bashrc 経由で PATH に追加
 # - ghost専用のSSH鍵ペア（~/.ssh/id_ed25519_ghost）を生成
 # 既に完了している項目はスキップする。
@@ -42,7 +43,7 @@ case "$#" in
 esac
 
 # --- packages ---
-packages=(tmux openssh-server openssh-client)
+packages=(tmux openssh-server openssh-client avahi-daemon avahi-utils libnss-mdns)
 already=()
 missing=()
 
