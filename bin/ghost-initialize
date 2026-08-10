@@ -1,0 +1,99 @@
+#!/bin/bash
+# ghost の動作に必要な準備を一通り行う。
+# - apt パッケージ（tmux, openssh-server, openssh-client）のインストール
+# - このスクリプトのある bin/ を ~/.bashrc 経由で PATH に追加
+# 既に完了している項目はスキップする。
+set -euo pipefail
+
+BASENAME="$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASHRC="$HOME/.bashrc"
+PATH_MARKER="# added by ghost-initialize"
+PATH_LINE="export PATH=\"$SCRIPT_DIR:\$PATH\""
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME [--dry-run]"
+    echo "example: $BASENAME"
+    echo "example: $BASENAME --dry-run"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+  } >&2
+}
+
+dry_run=0
+case "$#" in
+  0) ;;
+  1)
+    if [ "$1" = "--dry-run" ]; then
+      dry_run=1
+    else
+      usage "Unknown option: $1"
+      exit 1
+    fi
+    ;;
+  *)
+    usage "Wrong number of arguments"
+    exit 1
+    ;;
+esac
+
+# --- packages ---
+packages=(tmux openssh-server openssh-client)
+already=()
+missing=()
+
+for pkg in "${packages[@]}"; do
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+    already+=("$pkg")
+  else
+    missing+=("$pkg")
+  fi
+done
+
+# --- PATH ---
+path_already_done=0
+if [ -f "$BASHRC" ] && grep -qF "$PATH_LINE" "$BASHRC"; then
+  path_already_done=1
+fi
+
+{
+  echo "[packages]"
+  echo "  already installed: ${already[*]:-(none)}"
+  echo "  to install:        ${missing[*]:-(none)}"
+  echo "[PATH]"
+  echo "  $BASHRC: $([ "$path_already_done" -eq 1 ] && echo 'already contains bin/' || echo "will add $SCRIPT_DIR")"
+} >&2
+
+if [ "${#missing[@]}" -eq 0 ] && [ "$path_already_done" -eq 1 ]; then
+  echo "$BASENAME: nothing to do" >&2
+  exit 0
+fi
+
+if [ "$dry_run" -eq 1 ]; then
+  echo "$BASENAME: --dry-run, not making changes" >&2
+  exit 0
+fi
+
+if [ "${#missing[@]}" -gt 0 ]; then
+  sudo apt-get update
+  sudo apt-get install -y "${missing[@]}"
+fi
+
+if [ "$path_already_done" -eq 0 ]; then
+  {
+    echo ""
+    echo "$PATH_MARKER"
+    echo "$PATH_LINE"
+  } >> "$BASHRC"
+  echo "$BASENAME: added $SCRIPT_DIR to PATH via $BASHRC" >&2
+  {
+    echo ""
+    echo "To use it in this shell, run:"
+    echo ""
+    echo "  \$ source $BASHRC"
+    echo ""
+    echo "or logout and re-login."
+  } >&2
+fi
