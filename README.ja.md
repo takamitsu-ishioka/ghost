@@ -71,20 +71,34 @@ PM Ghost ── Yamada Ghost
 
 ## 使い方
 
-`ghost` CLI は [`bin/`](./bin) にあります。現時点では、構想の土台となる「tmux + SSH でLAN越しにClaude Codeのセッションを共有する」部分、すなわち2コマンドのみ実装しています。
+`ghost` CLI は [`bin/`](./bin) にあります。マシンごとに一度 `bin/ghost-initialize` を実行すると、必要なaptパッケージのインストール、`bin/` の `PATH` 追加、`ghost join` をパスワード無しで使うための専用鍵 `~/.ssh/id_ed25519_ghost` の生成まで行われます。
+
+GhostNetには中央の登録先が無いので、Ghost Server側の管理者にjoinする側の公開鍵をチャットやメール等で送り、登録してもらう必要があります。
 
 ```bash
-# Claude Codeを実行する側のマシンで
+# Ghost Client（join する側）で、ghost-initialize後
+$ cat ~/.ssh/id_ed25519_ghost.pub
+# → この1行をGhost Serverの管理者に送る
+
+# Ghost Server側で、鍵を受け取ったら
+$ echo '<受け取った公開鍵の1行>' | bin/ghost trust yamada
+# → ~/.ssh/authorized_keys に追加（登録済みならスキップ）
+```
+
+そのうえで、tmux + SSH でLAN越しにClaude Codeのセッションを共有します。
+
+```bash
+# Ghost Server（Claude Codeを実行する側のマシン）で
 $ bin/ghost publish work
 # → tmux new-session -A -s work claude
 
-# LAN内の別マシンから
+# Ghost Client側で、登録が済んでいれば
 $ bin/ghost join dev-yamada work
-# → ssh -t dev-yamada tmux attach -t work
+# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
 ```
 
 引数なしで `bin/ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
 
 ## 現在の状態
 
-`ghost publish` / `ghost join`（tmux + SSHによるPTY共有の土台）は実装済みです。`ghost ls`（LAN内発見）、`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。
+`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`（セットアップとtmux + SSHによるPTY共有の土台）は実装済みです。`ghost ls`（LAN内発見）、`ghost ask` / `ghost interview`（persistent knowledge space）は未実装です。設計の議論は `idea.ja.md` / `idea.md` を参照してください。

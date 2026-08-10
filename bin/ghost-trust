@@ -1,0 +1,86 @@
+#!/bin/bash
+# 標準入力で受け取ったSSH公開鍵を、指定した名前のコメント付きで
+# ~/.ssh/authorized_keys に登録する（このホストをGhost Serverとして、
+# 相手の ghost join を受け入れる）。同じ鍵が既に登録済みならスキップする。
+set -euo pipefail
+
+BASENAME="$(basename "$0")"
+SSH_DIR="$HOME/.ssh"
+AUTH_KEYS="$SSH_DIR/authorized_keys"
+
+usage() {
+  {
+    echo "$BASENAME: $1"
+    echo "usage: $BASENAME <name> [--dry-run]"
+    echo "example: cat yamada_ghost.pub | $BASENAME yamada"
+    echo
+    awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
+  } >&2
+}
+
+dry_run=0
+args=()
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) dry_run=1 ;;
+    -*)
+      usage "Unknown option: $arg"
+      exit 1
+      ;;
+    *) args+=("$arg") ;;
+  esac
+done
+
+if [ "${#args[@]}" -ne 1 ]; then
+  usage "Wrong number of arguments"
+  exit 1
+fi
+name="${args[0]}"
+
+key_line="$(cat -)"
+
+if [ -z "$key_line" ]; then
+  usage "No public key given on stdin"
+  exit 1
+fi
+
+if ! fingerprint="$(ssh-keygen -l -f /dev/stdin <<<"$key_line" 2>&1)"; then
+  echo "$BASENAME: invalid public key: $fingerprint" >&2
+  exit 1
+fi
+
+key_material="$(awk '{print $1, $2}' <<<"$key_line")"
+
+already=0
+if [ -f "$AUTH_KEYS" ] && grep -qF "$key_material" "$AUTH_KEYS"; then
+  already=1
+fi
+
+{
+  echo "[authorized_keys]"
+  echo "  name:        $name"
+  echo "  fingerprint: $fingerprint"
+  echo "  $AUTH_KEYS: $([ "$already" -eq 1 ] && echo 'already contains this key' || echo 'will add')"
+} >&2
+
+if [ "$already" -eq 1 ]; then
+  echo "$BASENAME: already trusted, nothing to do" >&2
+  exit 0
+fi
+
+if [ "$dry_run" -eq 1 ]; then
+  echo "$BASENAME: --dry-run, not making changes" >&2
+  exit 0
+fi
+
+mkdir -p "$SSH_DIR"
+chmod 700 "$SSH_DIR"
+touch "$AUTH_KEYS"
+chmod 600 "$AUTH_KEYS"
+
+{
+  echo "# ghost: $name"
+  echo "$key_line"
+} >> "$AUTH_KEYS"
+
+echo "$BASENAME: added $name's key to $AUTH_KEYS -- this host will now accept 'ghost join' from $name" >&2

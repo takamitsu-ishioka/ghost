@@ -71,20 +71,34 @@ The annotations in `idea.md` such as "Core Premise 1" and "Core Premise 3 - DJC"
 
 ## Usage
 
-The `ghost` CLI lives in [`bin/`](./bin). So far it implements the two commands the whole idea depends on — sharing a live Claude Code session over the LAN via tmux + SSH:
+The `ghost` CLI lives in [`bin/`](./bin). Run `bin/ghost-initialize` once per machine to install the required apt packages, put `bin/` on your `PATH`, and generate a dedicated `~/.ssh/id_ed25519_ghost` keypair for passwordless `ghost join`.
+
+Since GhostNet has no central registry, a Ghost Server's administrator has to be given the joining side's public key out-of-band (chat, email, ...) and register it themselves:
 
 ```bash
-# on the machine running Claude Code
+# on the Ghost Client (the joining side), after ghost-initialize:
+$ cat ~/.ssh/id_ed25519_ghost.pub
+# → send this line to the Ghost Server's administrator
+
+# on the Ghost Server, once the key has been received
+$ echo '<the public key line>' | bin/ghost trust yamada
+# → adds it to ~/.ssh/authorized_keys, skips if already trusted
+```
+
+Then sharing a live Claude Code session over the LAN via tmux + SSH:
+
+```bash
+# on the Ghost Server (the machine running Claude Code)
 $ bin/ghost publish work
 # → tmux new-session -A -s work claude
 
-# from another machine on the LAN
+# on the Ghost Client, once trusted
 $ bin/ghost join dev-yamada work
-# → ssh -t dev-yamada tmux attach -t work
+# → ssh -i ~/.ssh/id_ed25519_ghost -t dev-yamada tmux attach -t work
 ```
 
 Run `bin/ghost` with no arguments to see the available subcommands.
 
 ## Current status
 
-`ghost publish` / `ghost join` (the tmux + SSH PTY-sharing primitive) are implemented. `ghost ls` (LAN discovery), `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.
+`ghost initialize`, `ghost trust`, `ghost publish`, and `ghost join` (setup plus the tmux + SSH PTY-sharing primitive) are implemented. `ghost ls` (LAN discovery), `ghost ask` / `ghost interview` (persistent knowledge spaces) are not yet implemented — see `idea.md` / `idea.ja.md` for the design discussion behind them.
