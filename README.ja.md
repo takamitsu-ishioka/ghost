@@ -106,6 +106,18 @@ $ ghost join dev-yamada.local work
 
 引数なしで `ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
 
+## 懸案事項
+
+基本原則: Ghost Clientがキーを押したときの**意図**と、Ghost Serverの**実際の挙動**が一致すること。以下の2点は未解決です。
+
+- **送信キーの不一致**: Claude Codeのデフォルトの送信キーはEnterですが、*Ghost Server*側の `~/.tmux.conf` に
+  ```
+  set -s extended-keys on
+  set -as terminal-features 'xterm*:extkeys'
+  ```
+  が無いと、tmuxがEnterと修飾付きEnter（Alt+Enter、Shift+Enter）を同じバイト列に潰してしまい、Ghost Clientの「Enterを押した＝送信のつもり」という意図が共有中の`claude`プロセスに正しく伝わらないことがあります。これはサーバー側のtmux設定であり、クライアント側だけでは直せません。
+- **終了キーの不一致**: `ghost join` は現時点で、セッション内で実際に何が動いているか（例: `claude`はCtrl+D二回、`codex`はCtrl+D一回で終了）をGhost Clientに伝える手段がありません。`ghost publish` はまだ起動したコマンドを記録・広告していないため、どこにも表示されません。
+
 ## 現在の状態
 
 `ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。設計の議論は `idea.ja.md` / `idea.md` を参照してください。

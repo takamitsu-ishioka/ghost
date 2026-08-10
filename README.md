@@ -106,6 +106,18 @@ $ ghost join dev-yamada.local work
 
 Run `ghost` with no arguments to see the available subcommands.
 
+## Known issues
+
+The underlying principle: a Ghost Client's *intent* when pressing a key should match the Ghost Server's actual behavior. Two known gaps, not yet fixed:
+
+- **Submit-key mismatch**: Claude Code's default submit key is Enter, but unless the *Ghost Server*'s `~/.tmux.conf` has
+  ```
+  set -s extended-keys on
+  set -as terminal-features 'xterm*:extkeys'
+  ```
+  tmux collapses Enter and modified-Enter (Alt+Enter, Shift+Enter) into the same byte sequence, so a Ghost Client's "press Enter to submit" intent may not reach the shared `claude` process correctly. This is a server-side tmux setting, not something each client can fix locally.
+- **Exit-key mismatch**: `ghost join` currently has no way to tell a Ghost Client what's actually running in the session (e.g., `claude` exits on Ctrl+D twice, `codex` exits on Ctrl+D once). `ghost publish` doesn't yet record or advertise which command it launched, so this isn't surfaced anywhere.
+
 ## Current status
 
 `ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented — see `idea.md` / `idea.ja.md` for the design discussion behind the project.
