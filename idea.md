@@ -1,117 +1,117 @@
-# Claude Code UI構造
+English | [日本語](./idea.ja.md)
 
-**User:** y.kisaburo@gmail.com  
+# Claude Code UI Architecture
 
-## 山田:
+**User:** y.kisaburo@gmail.com
 
-Claude Code CLIのUIってどうやって表示・入力してるんですか？標準入出力？
+## Yamada:
+
+How does the Claude Code CLI's UI actually display things and take input? Standard I/O?
 
 ## ChatGPT:
 
-> **ウェブを検索中**
+> **Searching the web**
 >
 >
-> **6件のサイトを検索中**
+> **Searching 6 sites**
 >
-> 
 >
-> 6s考えました
+>
+> Thought for 6s
 
-はい。かなり本質的には **標準入出力 + TTY制御** です。
+Yes. At its core, it's really **standard I/O + TTY control**.
 
-ただし普通の
+But instead of the ordinary
 
 ```text
 stdin  → readline()
 stdout → print()
 ```
 
-ではなく、インタラクティブモードでは概ねこうなっています。
+in interactive mode it works roughly like this:
 
 ```text
-キーボード
+keyboard
    ↓
 TTY / stdin
    ↓  raw mode
 Claude Code
    ↓
-TUIレンダラー
+TUI renderer
    ↓  ANSI/VT escape sequence
 stdout
    ↓
-ターミナルエミュレータ
+terminal emulator
 ```
 
-### 入力
+### Input
 
-`process.stdin` を **TTYのraw mode** にして、Enterで確定した「行」を読むのではなく、**キー入力をほぼ1文字ずつイベントとして取得**しています。
+`process.stdin` is put into **TTY raw mode**, so instead of reading a "line" confirmed by Enter, it **captures key input almost one character at a time, as events**.
 
-実際、Claude Codeではstdinがraw modeをサポートしていない環境だと、
+In fact, in environments where stdin doesn't support raw mode, Claude Code has been reported to throw:
 
 > `Raw mode is not supported on the current process.stdin`
 
-というエラーが出た事例があります。([GitHub](https://github.com/anthropics/claude-code/issues/404?utm_source=chatgpt.com))
+([GitHub](https://github.com/anthropics/claude-code/issues/404?utm_source=chatgpt.com))
 
-だから、矢印キー、Esc、Ctrl+C、複数行編集、選択UIなどを自前で処理できます。
+That's how it can handle arrow keys, Esc, Ctrl+C, multi-line editing, selection UIs, and so on, all by itself.
 
-### 表示
+### Output
 
-表示も基本は **stdoutへ文字列を書いているだけ**です。
+Display, too, is basically **just writing strings to stdout**.
 
-ただし、
+But instead of just
 
 ```text
-こんにちは
+Hello
 ```
 
-だけでなく、
+it mixes in a lot of **ANSI/VT escape sequences** like
 
 ```text
 ESC[...
 ```
 
-のような **ANSI/VTエスケープシーケンス**を大量に混ぜます。
-
-これによって、
+By issuing terminal instructions like
 
 ```text
-カーソルを上へ
-カーソルを左へ
-この行を消去
-太字にする
-色を変える
-ここから再描画
+move cursor up
+move cursor left
+clear this line
+make it bold
+change the color
+redraw from here
 ```
 
-などをターミナルに命令して、GUIっぽく見せています。
+it makes the terminal look GUI-like.
 
-Claude CodeのTUIについて解析した資料では、React系の **Inkをベースにしたターミナルレンダラー**で、現在はかなり独自化されているとされています。([Claude Code from Source](https://claude-code-from-source.com/ch13-terminal-ui/?utm_source=chatgpt.com))
+Analyses of Claude Code's TUI say it's a **terminal renderer built on Ink** (a React-based library), though it's now been substantially customized. ([Claude Code from Source](https://claude-code-from-source.com/ch13-terminal-ui/?utm_source=chatgpt.com))
 
-つまり感覚的には、
+So conceptually it's:
 
 ```text
 React component
       ↓
-Ink系 renderer
+Ink-family renderer
       ↓
-文字 + ANSI escape sequences
+characters + ANSI escape sequences
       ↓
 stdout
 ```
 
-です。
+That's the gist.
 
-ここが面白いところで、**Claude CodeのUIは「画面」ではない**んですよね。
+Here's the interesting part: **Claude Code's UI isn't a "screen."**
 
-本質的には、
+Fundamentally, it is:
 
-> **stdinからキーイベントを受け取り、stdoutに端末制御文字列を吐き続けるプログラム**
+> **a program that keeps receiving key events from stdin and emitting terminal control strings to stdout**
 
-です。
+That's it.
 
-なのでSSH越しでも動くし、tmuxの中でも動く。一方でstdin/stdoutを単純にpipeしたりPTYなしで動かしたりすると、TUIが壊れやすい。実際 `cat file | claude` のような使い方でraw-mode問題が報告されています。([GitHub](https://github.com/anthropics/claude-code/issues/6609?utm_source=chatgpt.com))
+So it works over SSH, and it works inside tmux. On the other hand, if you naively pipe stdin/stdout or run it without a PTY, the TUI tends to break. In fact, raw-mode problems have been reported for usage like `cat file | claude`. ([GitHub](https://github.com/anthropics/claude-code/issues/6609?utm_source=chatgpt.com))
 
-そしてこれは、以前話していた「Claude Codeを別プログラムからremote-controlする」という観点ではかなり重要です。**stdin/stdoutそのものを相手にするより、PTY（pseudo terminal）を1枚かませてClaude Codeに「本物の端末だ」と思わせる**設計にすると、インタラクティブUIまで含めて外部制御できます。
+And this matters a lot from the angle we discussed earlier — "remote-controlling Claude Code from a separate program." **Rather than dealing with stdin/stdout directly, if you put a PTY (pseudo terminal) in between and make Claude Code believe "this is a real terminal,"** you can control it externally, interactive UI included.
 
 ---
 
@@ -120,20 +120,20 @@ stdout
 - [Error: Raw mode is not supported on the current process.stdin, which Ink uses as input stream by default. · Issue #404 · anthropics/claude-code](https://github.com/anthropics/claude-code/issues/404?utm_source=chatgpt.com)
 - [Ch 13. The Terminal UI | Claude Code from Source](https://claude-code-from-source.com/ch13-terminal-ui/?utm_source=chatgpt.com)
 
-## 山田:
+## Yamada:
 
-私のwslでClaudeCodeを動かし、その入出力をLAN内の任意のwslへリダイレクトできますか？
+Can I run Claude Code on my WSL and redirect its input/output to any WSL machine on the LAN?
 
 ## ChatGPT:
 
-はい。できます。しかも **Claude Code側を改造する必要はほぼありません**。
+Yes. You can. And **you barely need to modify Claude Code itself**.
 
-ポイントは「標準入出力を転送する」というより、**PTYそのものをLAN越しに延長する**ことです。
+The key isn't so much "forwarding standard I/O" as it is **extending the PTY itself over the LAN**.
 
-イメージはこうです。
+Here's the picture:
 
 ```text
-WSL-A（Claude Codeを実行）
+WSL-A (running Claude Code)
 ┌──────────────────────────┐
 │ Claude Code              │
 │   stdin/stdout           │
@@ -149,30 +149,30 @@ WSL-A（Claude Codeを実行）
 │ ssh -t WSL-A             │
 │       ↕                  │
 │ terminal                 │
-│ キーボード + 画面        │
+│ keyboard + screen        │
 └──────────────────────────┘
 ```
 
-一番簡単なのは、実は **SSH + tmux** です。
+The simplest way is actually **SSH + tmux**.
 
-WSL-Aで、
+On WSL-A:
 
 ```bash
 tmux new -s claude
 claude
 ```
 
-としてClaude Codeを起動。
+to launch Claude Code.
 
-WSL-Bから、
+From WSL-B:
 
 ```bash
 ssh -t user@WSL-A 'tmux attach -t claude'
 ```
 
-とすれば、WSL-Bの端末がほぼそのままClaude CodeのUIになります。
+and WSL-B's terminal becomes, almost as-is, Claude Code's UI.
 
-ここで重要なのは `-t` です。SSHがPTYを割り当てるので、
+The important thing here is `-t`. Since SSH allocates a PTY:
 
 ```text
 WSL-B terminal
@@ -186,9 +186,9 @@ tmux
 Claude Code
 ```
 
-となります。
+is what you get.
 
-出力は逆方向。
+Output flows the other way:
 
 ```text
 Claude Code
@@ -202,11 +202,11 @@ SSH
 WSL-B terminal
 ```
 
-したがって、色、カーソル移動、選択UI、Ctrl+C、矢印キーなどもかなりそのまま動きます。
+So colors, cursor movement, selection UIs, Ctrl+C, arrow keys — all of it works essentially unchanged.
 
-そして **tmuxを入れる意味が非常に大きい**。
+And **this is exactly where tmux matters enormously**.
 
-SSHが切れても、
+Even if SSH disconnects,
 
 ```text
 Claude Code
@@ -216,15 +216,15 @@ Claude Code
    PTY
 ```
 
-はWSL-A側に残ります。
+stays alive on the WSL-A side.
 
-別のWSL-Cから、
+From a different machine, WSL-C:
 
 ```bash
 ssh -t user@WSL-A 'tmux attach -t claude'
 ```
 
-すれば、
+and you can even do:
 
 ```text
         ┌── WSL-B
@@ -232,43 +232,37 @@ Claude──tmux
         └── WSL-C
 ```
 
-ということすらできます。
+In other words, this is effectively a mechanism for
 
-つまりこれは事実上、
+> **separating where Claude Code runs from where its UI is**
 
-> **Claude Codeの実行場所とUIの場所を分離する**
-
-仕組みです。
-
-しかもClaude Codeから見ると、
+And moreover, from Claude Code's point of view, all it sees is:
 
 ```text
-「私は普通のターミナルで動いています」
+"I'm running in an ordinary terminal"
 ```
 
-としか見えません。
+Nothing more.
 
-### さらに面白いこと
+### And here's something even more interesting
 
-SSHすら本質ではありません。
+Even SSH isn't essential.
 
-PTYのmaster側を取って、
+If you take the PTY's master side, you can do:
 
 ```text
 Claude
   ↕
 PTY
   ↕
-自作Python
+custom Python
   ↕
 TCP/WebSocket
   ↕
-別WSL / Android / Webブラウザ
+another WSL / Android / web browser
 ```
 
-とできます。
-
-Pythonなら概念的には、
+In Python, conceptually it's just:
 
 ```python
 pty.openpty()
@@ -276,9 +270,9 @@ os.fork()
 os.execvp("claude", ["claude"])
 ```
 
-して、PTY masterのbyte streamをTCP/WebSocketへ流せばいい。
+and then stream the PTY master's byte stream over TCP/WebSocket.
 
-そうすると、
+Which gets you all the way to:
 
 ```text
                     ┌─ WSL
@@ -288,112 +282,101 @@ Claude → PTY → relay ├─ Android
                     └─ Web browser
 ```
 
-まで行けます。
+Once you're here, it connects up quite neatly with what we discussed earlier — "remote-controlling Claude Code from a phone."
 
-ここまで来ると、以前の「スマホからClaude Codeをremote-control」という話がかなり綺麗につながります。
+**Stage one is just SSH + tmux — that's already enough.**
 
-**第一段階は SSH + tmux で十分。**
+And if you generalize the structure:
 
-そして、その構造を一般化すると、
-
-> `Claude Code = PTYにつながったプロセス`
+> `Claude Code = a process attached to a PTY`
 >
-> `UI = PTYの向こう側にいる任意の端末`
+> `UI = whatever terminal happens to be on the other end of the PTY`
 
-と考えられる。
+is how you can think about it.
 
-この抽象化はかなりUNIX的です。Claude Codeをネットワーク対応させるのではなく、**端末というインターフェースをネットワーク越しに運ぶ**わけです。
+This abstraction is quite UNIX-like. Rather than making Claude Code network-aware, **you're carrying the "terminal" interface itself over the network**.
 
-## 山田:
+## Yamada:
 
-私も1コマンド  
-他の誰かも1コマンド  
-ですか？
+One command for me, one command for someone else?
 
 ## ChatGPT:
 
-はい。**事前設定さえ済んでいれば、両者1コマンド**にできます。
+Yes. **As long as the setup is already done, it can be one command for both sides.**
 
-たとえば一番単純には、
+The simplest version, for example:
 
 ```text
-あなたのWSL
+your WSL
 $ claude-share
 ```
 
-これで内部的に
+which internally runs:
 
 ```bash
 tmux new-session -A -s claude claude
 ```
 
-を実行。
-
-LAN内の別の人は、
+Someone else on the LAN just does:
 
 ```text
-相手のWSL
+their WSL
 $ claude-join your-pc
 ```
 
-だけ。内部では例えば、
+That's it. Internally, for example, it's:
 
 ```bash
 ssh -t your-pc 'tmux attach-session -t claude'
 ```
 
-です。
-
-すると、
+So you get:
 
 ```text
-あなた ──┐
-         ↓
-       tmux ⇄ Claude Code
-         ↑
-相手 ────┘
+you ──┐
+      ↓
+    tmux ⇄ Claude Code
+      ↑
+them ─┘
 ```
 
-となり、**同じClaude Code画面を見て、双方からキー入力できます**。
+and **both of you can look at the same Claude Code screen and type into it**.
 
-しかも `tmux attach` は基本的に同一セッションへの複数クライアント接続ができるので、
+And since `tmux attach` fundamentally supports multiple clients attaching to the same session:
 
 ```text
-Aさん $ claude-join yamada
-Bさん $ claude-join yamada
-Cさん $ claude-join yamada
+Alice $ claude-join yamada
+Bob   $ claude-join yamada
+Carol $ claude-join yamada
 ```
 
-も可能です。
+is possible too.
 
-ただし一つ重要な点があります。これは「各自にClaude Codeのコピーが配られる」のではなく、
+There's one important caveat, though. This isn't "each person gets their own copy of Claude Code" — it's:
 
-> **一つのClaude Codeに複数人が同じキーボードとディスプレイをつないでいる**
+> **multiple people sharing the same keyboard and display, connected to one single Claude Code**
 
-状態です。
-
-したがってAさんが `hello` と打っている途中にBさんが `world` と打つと、極端には
+So if Alice is typing `hello` and Bob types `world` in the middle of it, at the extreme you can end up with:
 
 ```text
 hewlolrold
 ```
 
-になり得ます（笑）。
+(laughs)
 
-逆に言えば、**ペアプロ・レビュー・「ちょっと俺のClaude見て」用途には猛烈に簡単**です。
+Put another way, it's **extremely easy for pair-programming, review, or "hey, come look at my Claude" use cases**.
 
-さらに `claude-share` / `claude-join` の2本の薄いbashスクリプトにしてしまえば、狙っている「GUI操作ではなく、小さなコマンドとして部品化する」にきれいに収まります。
+And if you turn it into two thin bash scripts, `claude-share` / `claude-join`, it fits neatly into what we're aiming for: not GUI operation, but small commands as building blocks.
 
-## 山田:
+## Yamada:
 
-今LAN内に公開されているClaudeCodeの人名・ホスト名・セッション名の対応表  
-が欲しくなりますね。
+I'm starting to want a table mapping the person / hostname / session name of everyone currently publishing a Claude Code on the LAN.
 
 ## ChatGPT:
 
-そうです。そこまで行くと **「Claude Code版の `who` / `service discovery`」** が欲しくなります（笑）。
+Right — take it that far and you basically want **a "Claude Code edition of `who` / service discovery"** (laughs).
 
-例えば、
+For example:
 
 ```text
 $ claude-ls
@@ -404,32 +387,30 @@ suzuki      dev-suzuki        issue-455
 tanaka      thinkpad-tanaka    review-123
 ```
 
-そして、
+and then
 
 ```bash
 claude-join yamada
 ```
 
-だけで入れる。
+is all it takes to get in.
 
-設計としてはかなり小さくできます。各WSLがClaude Codeを公開するとき、
+As a design, it can be made quite small. When each WSL publishes its Claude Code, it advertises "here I am" info onto the LAN:
 
 ```text
-人名        yamada
-ホスト名    dev-yamada
-セッション  claude
+name       yamada
+host       dev-yamada
+session    claude
 ```
 
-という「私はここにいます」という情報をLANに広告する。
-
-構造としては、
+Structurally:
 
 ```text
 claude-share
     │
-    ├─ tmux session 作成
-    ├─ Claude Code 起動
-    └─ LANへ presence 広告
+    ├─ create tmux session
+    ├─ start Claude Code
+    └─ advertise presence on LAN
               ↓
       ┌─────────────────┐
       │ Claude directory │
@@ -443,11 +424,9 @@ claude-share
           claude-join
 ```
 
-となります。
+The interesting part is that **you don't even need a central server**.
 
-ここで面白いのが、**中央サーバーすら要らない**ことです。
-
-LAN限定なら mDNS/Bonjour/Avahi がかなり適任です。各WSLが例えば `_claude._tcp.local` を広告して、
+For LAN-only use, mDNS/Bonjour/Avahi is a great fit. Each WSL advertises something like `_claude._tcp.local`, with a TXT record like:
 
 ```text
 name=yamada
@@ -456,146 +435,136 @@ port=22
 session=issue-455
 ```
 
-のようなTXTレコードを持たせる。
-
-すると、
+Then:
 
 ```bash
 claude-ls
 ```
 
-はmDNSをbrowseするだけ。
+is just a matter of browsing mDNS.
 
-さらに、
+And:
 
 ```bash
 claude-join yamada
 ```
 
-は内部で
+internally resolves like:
 
 ```text
-mDNS検索
+mDNS lookup
   ↓
 yamada → dev-yamada.local / issue-455
   ↓
 ssh -t dev-yamada.local tmux attach -t issue-455
 ```
 
-と解決できます。
-
-そうするとユーザーから見えるインターフェースは、本当にこれだけになります。
+So the interface visible to the user ends up being just this:
 
 ```text
-# 公開する
+# publish yourself
 $ claude-share issue-455
 
-# 誰がいる？
+# who's around?
 $ claude-ls
 
-# 山田さんのところへ行く
+# go to Yamada's place
 $ claude-join yamada
 ```
 
-そして終了すればpresenceも消える。
+And when you quit, the presence disappears too.
 
-これはもう「リモートClaude Code」というより、**LAN内にClaude Codeの作業空間が浮かんでいて、人間がそこへ出入りする**モデルですね。
+At this point it's less "remote Claude Code" and more a model where **a Claude Code workspace floats on the LAN, and humans wander in and out of it**.
 
-しかも全部、
+And all of it can be built from:
 
-**Claude Code + tmux + SSH + mDNS + 薄いbash**
+**Claude Code + tmux + SSH + mDNS + thin bash**
 
-で組めます。専用サーバーもDBもWeb UIも不要です。
+No dedicated server, no DB, no web UI required.
 
-この小ささ、かなり良い設計だと思います（笑）。
+I think this small footprint is a pretty good design (laughs).
 
-## 山田:
+## Yamada:
 
-A君  
+A colleague:  
 $ claude-join hiratsuka-sensor-knowledge (persistent type)  
-（ややこしい質問や相談）  
-（Claudeが即座に回答）
+(asks a tricky question)  
+(Claude answers instantly)
 
-その頃の平塚さん：休暇中（笑）
+Meanwhile, the real Hiratsuka: on vacation (laughs)
 
 ## ChatGPT:
 
-（笑）。そうなります。
+(laughs) Yes, that's exactly what happens.
 
-そしてここで、さっきまでの「Claude Codeの画面共有」から**一段違うもの**に化けています。
+And here's where it turns into **something a level beyond** the "screen sharing for Claude Code" we were talking about until now.
 
 ```text
-A君
+A colleague
 $ claude-join hiratsuka-sensor-knowledge
 
-> このセンサー、人体静止時だけSNRが落ちるんですが、
-> 以前どういう判断で閾値を決めました？
+> This sensor's SNR only drops when the body is stationary —
+> what was the reasoning behind the threshold we chose before?
 
 Claude:
-> 2025年11月の検証では……
-> 平塚さんは○○という理由から……
+> In the November 2025 verification...
+> Hiratsuka's reasoning was XYZ...
 ```
 
-その頃、
+Meanwhile:
 
 ```text
-平塚さん
+Hiratsuka
      🏖️
 
-「…………」
+"....................."
 ```
 
-（笑）
+(laughs)
 
-重要なのは `persistent type` ですね。
+The important part is `persistent type`.
 
-通常の共有なら、
+In an ordinary share, it's:
 
 ```text
-人間 ── Claude Code ── 作業セッション
+human ── Claude Code ── work session
 ```
 
-で、人間が主体。
+with the human as the central actor.
 
-persistent type は、
+A persistent type is:
 
 ```text
-                  ┌─ A君
-                  ├─ B君
-平塚さんの知識 → Claude
-                  ├─ C君
-                  └─ 未来の平塚さん本人
+                  ┌─ Colleague A
+                  ├─ Colleague B
+Hiratsuka's knowledge → Claude
+                  ├─ Colleague C
+                  └─ Hiratsuka's future self
 ```
 
-になる。
+In other words: **you're not "connecting to Hiratsuka" — you're "connecting to the knowledge space Hiratsuka cultivated."**
 
-つまり **「平塚さんに接続する」のではなく、「平塚さんが育てた知識空間に接続する」**。
+So Hiratsuka can be queried even while
 
-だから平塚さんが、
+- on vacation
+- in a meeting
+- asleep
+- transferred to another team
+- no longer at the company
 
-- 休暇中
-- 会議中
-- 睡眠中
-- 異動済み
-- 退職済み
+And what's interesting is that, unlike a plain RAG-based "internal FAQ," Claude Code can cross-reference the repository, git history, design docs, logs, and verification scripts right there and **actually reason across them**.
 
-でも問い合わせ可能になる。
-
-しかも面白いのは、単なるRAGの「社内FAQ」と違って、Claude Codeならその場でリポジトリ、Git履歴、設計資料、ログ、検証スクリプトなどを横断して**推論までできる**ことです。
-
-すると名前も、
-
-```text
-claude-join <person>
-```
-
-より、
+Which means the name, too, makes more sense as:
 
 ```text
 claude-join <knowledge-space>
 ```
 
-のほうが本質的になる。
+rather than:
+
+```text
+claude-join <person>
+```
 
 ```text
 $ claude-ls
@@ -606,179 +575,174 @@ yamada-mmwave-debug          live        yamada
 release-review               shared      suzuki
 ```
 
-これ、かなり強烈です。
+This is pretty striking.
 
-**「担当者に聞く」という同期コミュニケーションを、「担当者が残した知識＋AIに問い合わせる」という非同期通信へ変換している。**
+**It converts the synchronous communication of "ask the person in charge" into the asynchronous communication of "query the knowledge the person in charge left behind, plus AI."**
 
-平塚さんが休暇から戻ったら、
+When Hiratsuka comes back from vacation:
 
-> 「俺がいない間に俺が17件回答してる……」
+> "While I was gone... I answered 17 questions..."
 
-となる（笑）。
+(laughs)
 
-## 山田:
+## Yamada:
 
-プロマネ
+Project manager:
 
 $ wsl  
 $ codex  
-チームのメンバーの進捗管理エージェントから取材して進捗状況と問題点（あれば）をまとめて。
+Interview the team members' progress-tracking agents and summarize the status and any problems.
 
 ## ChatGPT:
 
-そう（笑）。ここまで来ると、**人間同士が進捗報告する必要まで薄くなります**。
+Right (laughs). At this point, **even the need for humans to report progress to each other starts to thin out**.
 
 ```text
-プロマネ
+Project manager
 $ wsl
 $ codex
 
-> チームのメンバーの進捗管理エージェントから取材して
-> 進捗状況と問題点（あれば）をまとめて。
+> Interview the team members' progress-tracking agents
+> and summarize the status and any problems.
 ```
 
-Codex側は、
+On the Codex side:
 
 ```text
 PM Agent
    │
    ├── interview → yamada-progress
-   │                   └─ Git / Issue / Claude履歴
+   │                   └─ Git / Issues / Claude history
    │
    ├── interview → hiratsuka-progress
-   │                   └─ Git / Issue / Claude履歴
+   │                   └─ Git / Issues / Claude history
    │
    └── interview → suzuki-progress
-                       └─ Git / Issue / Claude履歴
+                       └─ Git / Issues / Claude history
             ↓
-        比較・推論
+        compare & reason
             ↓
-        PMへ報告
+        report to PM
 ```
 
-となる。
+is what happens.
 
-例えば回答は、
+The answer might look like:
 
-> **全体:** おおむね予定どおりです。  
-> 山田：呼吸数解析を実装済み。現在ALPHA検証中。  
-> 平塚：センサー閾値変更の検証中。精度低下の可能性を発見。  
-> 鈴木：API改修完了。PR #481レビュー待ち。  
+> **Overall:** roughly on schedule.  
+> Yamada: respiration-rate analysis implemented. Currently under ALPHA verification.  
+> Hiratsuka: verifying a sensor threshold change. Found a possible accuracy regression.  
+> Suzuki: API changes complete. Waiting on PR #481 review.
 >
-> **問題:** 平塚の作業が山田のALPHA検証と同じ環境を必要としており、明日競合する可能性があります。
+> **Issue:** Hiratsuka's work needs the same environment as Yamada's ALPHA verification, and they may conflict tomorrow.
 >
-> **提案:** 山田の検証を本日中に完了するか、検証環境を分離してください。
+> **Suggestion:** either have Yamada finish verification today, or split the verification environments.
 
-ここで重要なのは、**メンバーが「進捗報告書」を書いていない**ことです。
+The important thing here is that **no team member wrote a "progress report."**
 
-各progress agentが、
+Each progress agent constructs the current state from things like:
 
 ```text
 Git
 Issue tracker
-作業ディレクトリ
-テスト結果
-Claude Codeとの会話
-設計判断
+working directory
+test results
+conversations with Claude Code
+design decisions
 ```
 
-などから現在状態を構成する。
+So humans can just go on working normally.
 
-だから人間は普通に仕事していればよい。
-
-そしてPMエージェントは「進捗どうですか？」だけでなく、
+And the PM agent doesn't just ask "how's it going?" — it can also do things like:
 
 ```text
 PM agent:
-「#455は昨日からstatusが変わっていませんが？」
+"#455 hasn't changed status since yesterday — what's up?"
 
-山田agent:
-「実装は完了しています。
- 現在PRODデータを使った回帰試験中です」
+Yamada agent:
+"Implementation is done.
+ Currently running a regression test against PROD data."
 
 PM agent:
-「blockerは？」
+"Any blockers?"
 
-山田agent:
-「ありません。ただしALPHA環境をあと3時間程度占有する見込みです」
+Yamada agent:
+"None. Though it'll occupy the ALPHA environment for
+ roughly 3 more hours."
 ```
 
-と、**AI同士で取材できる**。
+— that is, **AI can interview AI directly**.
 
-これ、以前話していた
+This is a fairly complete realization of something we talked about before:
 
-> **問い合わせをPull型にする**
+> **turning inquiries into a pull model**
 
-のかなり完成形ですね。
-
-従来：
+The traditional flow:
 
 ```text
-作業
+work
  ↓
-人間が状況を整理
+human organizes the situation
  ↓
-日報を書く
+write a daily report
  ↓
-定例会議で説明
+explain it in a standup
  ↓
-PMが再整理
+PM reorganizes it
  ↓
-進捗表を書く
+write a progress table
 ```
 
-これを、
+gets compressed down to:
 
 ```text
-作業 → 証跡
+work → evidence
         ↑
     Agent ← Agent
         ↓
        PM
 ```
 
-まで縮めてしまう。
+And what a PM actually wants isn't fundamentally "a report" — it's **the anomalies, dependencies, and decision points**.
 
-しかもPMが欲しいのは本来「報告」ではなく、**異常・依存関係・意思決定が必要な箇所**です。
-
-なので究極的には、朝会すら、
+So ultimately, even the morning standup can shrink to:
 
 ```text
 $ codex
 
-> 今日、私が介入すべきことは？
+> What needs my attention today?
 
-「2件あります。」
+"Two things."
 ```
 
-で済む（笑）。
+(laughs)
 
-**人間がAIに報告するのではなく、AIが人間の仕事を観測し、AI同士で取材し、意思決定が必要なところだけ人間へ上げる。**
+**Instead of humans reporting to AI, the AI observes humans' work, AIs interview each other, and only the things that need a decision get escalated to a human.**
 
-これは「AIで会議を効率化」ではなく、かなり本質的に**会議を発生させていた情報収集プロセスそのものの置換**ですね。
+This isn't "using AI to make meetings more efficient" — it's, quite fundamentally, **a replacement of the information-gathering process that made meetings necessary in the first place**.
 
-## 山田:
+## Yamada:
 
-このシステムの名前を考えてください。
+Come up with a name for this system.
 
 ## ChatGPT:
 
-この構想なら、単なる「Claude共有」ではなく、**人間・AI・知識・作業セッションをLAN上のアドレス可能なエージェントとして扱う基盤**ですよね。
+Given this vision, it's not just "sharing a Claude session" — it's **infrastructure that treats people, AI, knowledge, and work sessions as addressable agents on a LAN**, right?
 
-名前候補を挙げるなら：
+Some name candidates:
 
-- **AgentLAN** - 直球。「LAN上にエージェントがいる」。`agent-ls`, `agent-join` も自然。
-- **AgentNet** - LANを超えて発展させやすい。やや一般名詞すぎる。
-- **WorkMesh** - 人間・AI・知識空間がmesh状につながる感じ。かなり構想に合う。
-- **AgentMesh** - 技術的には最も説明力が高い。ただし既存用語・製品との衝突が多そう。
-- **GhostNet** - 本人が休暇中でも「平塚さん」が答える（笑）。ただし既存の固有名詞との衝突が強い。
-- **Shikigami** - 式神。本人の代わりに仕事・取材・応答するAIという意味では抜群。ただ海外向けには説明が必要。
-- **Shikigami Network / ShikiNet** - 技術名称にしやすい。
-- **Presence** - 「そこにいる人」ではなく「そこに存在する知識・エージェント」を発見する思想。ただ一般名詞すぎる。
-- **Colony** - 自律エージェント群が互いに通信して仕事をするイメージ。
-- **OfficeOS** - 最終形を表す名前。「組織そのものがOSになる」。ただ現状の実装より名前が大きい。
+- **AgentLAN** – Direct. "There are agents on the LAN." `agent-ls`, `agent-join` feel natural too.
+- **AgentNet** – Easy to extend beyond a LAN. Maybe a bit too generic.
+- **WorkMesh** – Evokes people, AI, and knowledge spaces connected in a mesh. Fits the vision well.
+- **AgentMesh** – Technically the most descriptive. But likely collides with a lot of existing terms/products.
+- **GhostNet** – "Hiratsuka" answers even while on vacation (laughs). But collides strongly with an existing proper noun.
+- **Shikigami** – A spirit servant that acts, investigates, and answers on someone's behalf — great fit conceptually. Needs explaining for a non-Japanese audience though.
+- **Shikigami Network / ShikiNet** – Easy to turn into a technical name.
+- **Presence** – The idea of discovering not "a person who is there" but "knowledge/agents that exist there." Maybe too generic.
+- **Colony** – Evokes a swarm of autonomous agents communicating with each other to get work done.
+- **OfficeOS** – A name for the end state: "the organization itself becomes an OS." Might be a bigger name than the current implementation warrants.
 
-私なら **ShikiNet** をかなり推します。
+If it were up to me, I'd strongly push for **ShikiNet**.
 
 ```bash
 $ shiki-ls
@@ -794,36 +758,34 @@ pm                           persistent  PM
 $ shiki-join hiratsuka-sensor-knowledge
 ```
 
-さらに、
+And further:
 
 ```bash
 $ shiki-share
 $ shiki-ls
 $ shiki-join yamada
-$ shiki-ask yamada-progress "現在のblockerは？"
+$ shiki-ask yamada-progress "what's the current blocker?"
 ```
 
-とコマンド体系まで妙に自然です。
+— even the command vocabulary falls out surprisingly naturally.
 
-そして概念としても、
+And conceptually, too, it becomes:
 
-> **ShikiNet - 人とAIの式神が働く、分散型組織ネットワーク**
+> **ShikiNet — a distributed organizational network where humans' and AI's shikigami work**
 
-となる。
+"Hiratsuka's shikigami answers while Hiratsuka is on vacation," "the PM's shikigami interviews everyone else's shikigami" — it maps onto today's discussion pretty cleanly (laughs).
 
-「平塚さん休暇中なのに平塚式神が回答」「PM式神が各メンバーの式神を取材」という今回の話に、かなり綺麗にはまります（笑）。
+## Yamada:
 
-## 山田:
-
-ghostいいな（笑）。攻殻機動隊。
+I like "ghost" (laughs). Ghost in the Shell.
 
 ## ChatGPT:
 
-そうか、**Ghost** はそっちの意味を乗せると急に強くなりますね（笑）。
+Oh, right — layer that meaning onto it and **Ghost** suddenly gets a lot stronger (laughs).
 
-攻殻機動隊的には、「本人そのもの」ではないけれど、**その人の知識・判断履歴・仕事の文脈がそこに残っていて応答する**。まさに今回の persistent agent です。
+In the *Ghost in the Shell* sense, it's not "the person themselves," but **the person's knowledge, decision history, and work context remain there and respond**. That's exactly this persistent agent.
 
-例えばシステム名を **Ghost** にしてしまう。
+So, let's just make the system name **Ghost**.
 
 ```text
 $ ghost ls
@@ -835,26 +797,26 @@ suzuki-api                   live         suzuki
 pm                           persistent   project
 ```
 
-そして、
+And:
 
 ```text
 $ ghost join hiratsuka-sensor
 ```
 
-平塚さん本人は温泉にいる（笑）。
+while the real Hiratsuka is off at a hot spring (laughs).
 
-さらに語彙が全部きれいにつながります。
+And the whole vocabulary lines up cleanly:
 
 ```text
-ghost           システム全体
-ghost ls        Ghostを探す
-ghost join      Ghostに接続する
-ghost publish   自分のGhostを公開
-ghost ask       Ghostに問い合わせる
-ghost interview Ghostを取材する
+ghost           the whole system
+ghost ls        find a Ghost
+ghost join      connect to a Ghost
+ghost publish   publish your own Ghost
+ghost ask       query a Ghost
+ghost interview interview a Ghost
 ```
 
-そして複数Ghostが相互接続されるネットワークを **GhostNet** と呼ぶ。
+And a network of interconnected Ghosts gets called **GhostNet**.
 
 ```text
              GhostNet
@@ -866,29 +828,29 @@ PM Ghost ── Yamada Ghost
       └── Suzuki Ghost
 ```
 
-ただ `GhostNet` は実在するマルウェア/ボットネット系の名称との衝突があるので、プロジェクト名としては避けた方がよさそうです。
+Though `GhostNet` collides with the name of a real-world malware/botnet, so it's probably best avoided as a project name.
 
-むしろ **Ghost Protocol** なんかも格好いい。
+**Ghost Protocol** would be kind of cool too.
 
-ただしこれも『ミッション：インポッシブル』臭が強烈（笑）。
+Except that one reeks heavily of *Mission: Impossible* (laughs).
 
-一番好きなのは、もっと素っ気なく、
+The one I like best is something more understated:
 
-> **GHOST - distributed human knowledge interface**
+> **GHOST – distributed human knowledge interface**
 
-みたいに後付けで略語を作って、CLIは単に `ghost`。
+— coin a backronym like that, and just keep the CLI as plain `ghost`.
 
 ```bash
 $ ghost join hiratsuka
 
 Connecting to hiratsuka's ghost...
 
-hiratsuka> どうしました？
+hiratsuka> What's up?
 ```
 
-**本人がいなくても、ghostはいる。**
+**Even when the person isn't there, the ghost is.**
 
-今回のシステム思想を一行で説明できてしまいます（笑）。
+That single line ends up describing today's whole system concept (laughs).
 
 
 
@@ -897,53 +859,53 @@ Powered by [ChatGPT Exporter](https://www.chatgptexporter.com)
 
 ---
 
-## 実例：懐疑への回答
+## Case study: answering the skeptic
 
-この文書を読んだ人が持つであろう最大の疑問は、
+The biggest doubt anyone reading this document will probably have is:
 
-> 「そんなにうまく個人の長期・短期記憶を知識ベースにできるのか？」
+> "Can you really turn someone's long- and short-term personal memory into a working knowledge base that well?"
 
-だと思う。以下の2枚は、その疑問への実例による回答である。
+I think so. The two screenshots below are a real-example answer to that doubt.
 
-### 例1：朝の予定確認（短期記憶と長期ルーティンの統合）
+### Example 1: checking today's schedule (integrating short-term memory with a long-term routine)
 
-![朝の予定確認](images/recall-schedule.png)
+![Checking today's schedule](images/recall-schedule.png)
 
-「今日はどんな予定でしたっけ？」という問いに対し、「Recalled 3 memories」から始まり、
+In response to "what were today's plans again?", starting from "Recalled 3 memories," it surfaces — without the user explaining anything —
 
-- 定例2件（週報作成スクリプト、週次会議準備）
-- 先週木曜(8/6)に持ち越しになった `regression-test-toolkit` の push 詰まり（`vitalsign_one.json` が100MB超でGitHub側にpush拒否）
+- 2 standing items (the weekly-report script, prep for the weekly meeting)
+- a `regression-test-toolkit` push that got stuck and was carried over from last Thursday (8/6) (`vitalsign_one.json` was rejected by GitHub for being over 100MB)
 
-を、ユーザーに何も説明させずに提示し、「今日がその日ですね」と続きまで踏まえて聞き返している。**短期記憶（先週の未解決タスク）と長期的なルーティン（週次業務）が統合されて想起されている**例。
+and then follows up with "today's the day for that, isn't it?" This is an example of **short-term memory (last week's unresolved task) and a long-term routine (the weekly workflow) being recalled together, in an integrated way**.
 
-### 例2：技術的な調査の継続（記憶の再生ではなく再検証）
+### Example 2: continuing a technical investigation (re-verification, not memory playback)
 
-![技術的な調査の継続](images/recall-investigation.png)
+![Continuing a technical investigation](images/recall-investigation.png)
 
-「state_machine と function は本当に同値か」という過去の論点について、単に記憶を再生するのではなく、**grep・ファイル読み込み・shellコマンドを4回実行して現状を再検証**した上で、「棚卸し表」形式で完了/未完了を提示し、ブロッカー（`.env.local` 未作成など）まで特定している。下部の「recap」行は、会話が中断されても次回に文脈が引き継がれる仕組みを示す。
+On the past question of "are `state_machine` and `function` really equivalent?", instead of simply replaying memory, it **re-verifies the current state by running grep, reading files, and running shell commands 4 times**, then presents a "status inventory" table of what's done/not done, down to identifying a blocker (e.g., `.env.local` not yet created). The "recap" line at the bottom shows the mechanism by which context carries over to the next session even if the conversation is interrupted.
 
-### 結論
+### Conclusion
 
-この2枚が合わせて示しているのは、想起が「もっともらしい記憶の再生」ではなく、
+What these two screenshots show together is that recall isn't "plausible-sounding memory playback" — it's that
 
-> **記憶（過去の会話・決定）と実装（ファイル・git状態というSSoT）を突き合わせて検証してから答えている**
+> **the AI cross-checks memory (past conversations and decisions) against the implementation (files and git state, i.e. the SSoT) and verifies before answering.**
 
-という点である。「大前提1 - SSoTは実装」（→ [CLAUDE.md](./CLAUDE.md)）の思想と直結しており、「AIが記憶を捏造していないか」という懐疑への最も強い反証になる。
+That connects directly to "Core Premise 1 - The SSoT is the implementation" (→ [CLAUDE.md](./CLAUDE.md)), and it's the strongest possible counter to the doubt "is the AI fabricating its memory?"
 
-## 実例：リポジトリから設計意図を読み取れるか
+## Case study: can design intent be read straight out of the repository?
 
-もう一つの疑問は、
+Another doubt is:
 
-> 「文書化しなくても、コードだけから『なぜそう作ったか』まで読み取れるのか？」
+> "Even without documentation, can you really read all the way to 'why it was built that way' from the code alone?"
 
-への回答。
+Here's the answer.
 
-![mmwaveプロジェクトの指示書を確認](images/repo-design-intent.png)
+![Checking the mmwave project's instructions](images/repo-design-intent.png)
 
-事前の会話履歴（記憶）は一切使わず、「このブランチの目的・手段・テスト手法・採用理由を説明して」という指示だけで、shellコマンドを3回実行（git log等でリポジトリを調査）し、以下を復元している。
+Using no prior conversation history (memory) at all, and given only the instruction "explain this branch's purpose, approach, testing method, and rationale," it ran 3 shell commands (surveying the repository via `git log` etc.) and reconstructed the following:
 
-- **目的（Issue #448 に紐づく）**: 入眠判定の走査開始点を「FRAME開始（20:00固定）」から「直近のオムツ交換時刻」に動的再アンカーする狙いを、コミット履歴とコードから再構成。
-- **手段**: FRAME/WINDOW/HEADの状態遷移をmermaid図で自動生成。さらに「一晩に複数のrisingが残る」不整合を解消した修正がどのコミット（`3e348863`）で入ったかまで特定。
-- **テスト手法と採用理由**: 単体テスト110件に加え、本番C#実装と独立再実装したPythonロジックを実データ（約38万件のVitalSign）に走らせる「DJC回帰テスト」（→ [CLAUDE.md 大前提3](./CLAUDE.md)）を採用した理由として、**入眠時刻には外部正解ラベルが存在せずAccuracy的なKPIを作るとGoodhartの法則で指標自体が歪む**、という設計判断の背景まで言語化している。
+- **Purpose (tied to Issue #448)**: reconstructed from commit history and code that the goal was to dynamically re-anchor the sleep-onset scan's starting point from "FRAME start (fixed at 20:00 JST)" to "the most recent diaper-change time."
+- **Approach**: auto-generated a mermaid diagram of the FRAME/WINDOW/HEAD state transitions, and further pinpointed exactly which commit (`3e348863`) fixed the inconsistency where "multiple risings could remain in one night."
+- **Testing method and rationale**: on top of 110 unit tests, it explained even the design rationale behind adopting a "DJC regression test" (→ [CLAUDE.md Core Premise 3](./CLAUDE.md)) — running the production C# implementation and an independently-reimplemented Python version side by side against real data (~380,000 VitalSign records) — namely, **there's no external ground-truth label for sleep-onset time, so building an Accuracy-style KPI would just get gamed via Goodhart's Law**.
 
-つまりこれは「コードを読んで動作を要約した」のではなく、**git履歴・Issue番号・コミットハッシュ・テストデータの出所（患者名・件数）まで横断して、設計判断の"なぜ"を再構成した**例である。「大前提1 - SSoTは実装」「大前提3 - DJC」（→ [CLAUDE.md](./CLAUDE.md)）が、単なる思想ではなく実際にリポジトリから読み出し可能な形で埋め込まれていることの証拠になっている。
+In other words, this isn't "read the code and summarized what it does" — it's an example of **reconstructing the "why" of a design decision by cross-referencing git history, issue numbers, commit hashes, and even the provenance of the test data (patient name, record count)**. This is evidence that "Core Premise 1 - the SSoT is the implementation" and "Core Premise 3 - DJC" (→ [CLAUDE.md](./CLAUDE.md)) aren't just philosophy — they're actually embedded in a form that's recoverable straight from the repository.

@@ -1,42 +1,44 @@
+English | [日本語](./README.ja.md)
+
 # Ghost
 
-**本人がいなくても、ghostはいる。**
+**Even when the person isn't there, the ghost is.**
 
-Ghost は、人・AI・知識・作業セッションを LAN 上でアドレス可能な「エージェント」として扱うための構想・実装リポジトリです。詳細な発想の経緯は [`idea.md`](./idea.md) を参照してください。
+Ghost is a concept-and-implementation repository for treating people, AI, knowledge, and work sessions as addressable "agents" on a LAN. See [`idea.md`](./idea.md) for the full story of how the idea developed.
 
-## 何のためのシステムか
+## What is this system for?
 
-Claude Code の UI は本質的に「stdin からキーイベントを受け取り、stdout に端末制御文字列（ANSI/VTエスケープ）を吐き続けるプログラム」です。この事実を起点に、次のように発展させます。
+The Claude Code UI is, at its core, "a program that keeps receiving key events from stdin and emitting terminal control strings (ANSI/VT escapes) to stdout." Starting from that fact, the idea develops as follows:
 
-1. **PTY を延長する** — tmux + SSH で PTY をそのまま LAN 越しに運べば、Claude Code の対話 UI ごと別マシンから接続できる。
+1. **Extend the PTY.** — If you carry the PTY itself over the LAN via tmux + SSH, you can connect to Claude Code's interactive UI, in full, from another machine.
 
-2. **知識空間に接続する**
+2. **Connect to a knowledge space.**
       ```
       $ claude-join <ghost-knowledge-space-name>
       ```
-      このコマンドで、
-      - 特定リポジトリ
-      - リポジトリの開発者とエージェントのセッションログ
-      - 開発者の設計思想
-      - 開発者の実装規則
-      から成る「ghost (知識空間)」に接続する。
-      ghost なら、本人が休暇中・会議中・退職済みでも問い合わせ可能。  
+      This command connects you to a "ghost (knowledge space)" made up of:
+      - a specific repository
+      - the session logs of that repository's developer and their agents
+      - the developer's design philosophy
+      - the developer's implementation rules
 
-3. **AI 同士が取材する**  
-   PM の状況把握は、PM のエージェントが各メンバーの ghost から取材し、進捗・ブロッカーを人間の報告なしに集約する。
+      With a ghost, you can query someone even while they're on vacation, in a meeting, or after they've left the company.
 
-これを一言で表す名前が **Ghost**（攻殻機動隊由来）です。
+3. **AI interviews AI.**
+   For the PM to grasp status, the PM's agent interviews each member's ghost and aggregates progress and blockers — no human reporting required.
+
+The name that captures this in one word is **Ghost** (from *Ghost in the Shell*).
 
 ```text
-ghost           システム全体
-ghost ls        Ghostを探す
-ghost join      Ghostに接続する
-ghost publish   自分のGhostを公開
-ghost ask       Ghostに問い合わせる
-ghost interview Ghostを取材する
+ghost           the whole system
+ghost ls        find a Ghost
+ghost join      connect to a Ghost
+ghost publish   publish your own Ghost
+ghost ask       query a Ghost
+ghost interview interview a Ghost
 ```
 
-複数の ghost が相互接続されるネットワークを **GhostNet** と呼びます。
+A network of interconnected ghosts is called **GhostNet**.
 
 ```text
              GhostNet
@@ -48,18 +50,18 @@ PM Ghost ── Yamada Ghost
       └── Suzuki Ghost
 ```
 
-## 「本当にそんなことができるのか？」への回答
+## Answering "can it really do that?"
 
-構想だけでなく、実際に AI が記憶（過去の会話・決定）と実装（ファイル・git 状態という SSoT）を突き合わせて検証してから答えている例を `idea.md` 末尾に収録しています。
+This isn't just a concept — `idea.md` includes, at the end, real examples of the AI cross-checking memory (past conversations and decisions) against the implementation (files and git state, i.e. the SSoT) before answering.
 
-- 短期記憶と長期ルーティンの統合想起（`images/recall-schedule.png`）
-- 記憶の再生ではなく grep・shell で再検証してから回答（`images/recall-investigation.png`）
-- 会話履歴なしに git 履歴だけから設計意図・採用理由を再構成（`images/repo-design-intent.png`）
+- Integrating short-term memory with a long-term routine (`images/recall-schedule.png`)
+- Re-verifying instead of just replaying memory, via grep/shell (`images/recall-investigation.png`)
+- Reconstructing design intent and rationale from git history alone, with no conversation history (`images/repo-design-intent.png`)
 
-## CLAUDE.md（大前提・DJCの出典）
+## CLAUDE.md (the source for "Core Premises" and DJC)
 
-`idea.md` 中の「大前提1」「大前提3 - DJC」等の注記は、このリポジトリ直下の [`CLAUDE.md`](./CLAUDE.md) にリンクしています。これは山田喜三郎のグローバル `~/.claude/CLAUDE.md` の実体コピーで、`_CLAUDE.md`（同ファイルへのシンボリックリンク、`.gitignore` 対象）から [`claude_md_sync.sh`](./claude_md_sync.sh) で同期しています。git はシンボリックリンクをリンクのまま push してしまうため、リポジトリに含めて公開するのは同期後の実体（`CLAUDE.md`）です。
+The annotations in `idea.md` such as "Core Premise 1" and "Core Premise 3 - DJC" link to [`CLAUDE.md`](./CLAUDE.md) at the root of this repository. It's a real copy of the developer's global `~/.claude/CLAUDE.en.md` (the English translation of `~/.claude/CLAUDE.md`), synced from `_CLAUDE.en.md` (a symlink to that file, `.gitignore`d) via [`claude_md_sync.sh`](./claude_md_sync.sh). The Japanese original is likewise tracked as [`CLAUDE.ja.md`](./CLAUDE.ja.md), synced from `_CLAUDE.md`. Since git pushes a symlink as a symlink rather than its target's content, what actually ships in the repository is the synced copy, not the link itself.
 
-## 現在の状態
+## Current status
 
-このリポジトリは現時点では構想メモ（`idea.md`）と実例画像（`images/`）のみで、`ghost` CLI 自体はまだ実装されていません。今後実装予定です。
+At this point the repository is just the concept notes (`idea.md` / `idea.ja.md`) and example images (`images/`) — the `ghost` CLI itself hasn't been implemented yet. That's planned for later.
