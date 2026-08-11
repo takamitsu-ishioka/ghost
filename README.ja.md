@@ -1,5 +1,7 @@
 [English](./README.md) | 日本語
 
+<img width="1732" height="908" alt="0_prologue_title_ja" src="https://github.com/user-attachments/assets/5e7ad5c1-5932-4616-8b9f-9a7a49fc981c" />
+
 # Ghost
 
 **本人がいなくても、ghostはいる。**
