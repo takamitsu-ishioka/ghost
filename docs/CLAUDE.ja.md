@@ -114,9 +114,9 @@ DJC はこれを機械的な収束判定に置き換える。
   - 英語は日本語から翻訳
   - ただし、日本語版が commit 済みなら翻訳不要
   - ただし、1000 行を超える文書(md)ファイルは、その旨をユーザーに表示してスキップし、ユーザーの手動翻訳を待つ
-  - make push (makefile未実装)
-      - claude_md_sync.sh (ある)
-      - document_translate.sh (未実装)
+  - make push
+      - claude_md_sync.sh
+      - document_translate.sh
   - 個人情報が無いことを確認
 
 ---

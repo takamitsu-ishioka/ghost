@@ -114,9 +114,9 @@ Example: initialize.sh
   - English is translated from Japanese
   - However, if the Japanese version has already been committed, no translation is required.
   - However, for Markdown files exceeding 1,000 lines, display a notification to the user, skip the file, and wait for the user to provide a manual translation.
-  - make push (makefile not yet implemented)
-      - claude_md_sync.sh (exists)
-      - document_translate.sh (not yet implemented)
+  - make push
+      - claude_md_sync.sh
+      - document_translate.sh
   - Confirm there is no personal information
 
 ---
