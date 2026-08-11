@@ -4,7 +4,7 @@
 
 **本人がいなくても、ghostはいる。**
 
-Ghost は、人・AI・知識・作業セッションを LAN 上でアドレス可能な「エージェント」として扱うための構想・実装リポジトリです。詳細な発想の経緯は [`idea.ja.md`](./idea.ja.md) を参照してください。
+Ghost は、人・AI・知識・作業セッションを LAN 上でアドレス可能な「エージェント」として扱うための構想・実装リポジトリです。詳細な発想の経緯は [`docs/idea.ja.md`](./docs/idea.ja.md) を参照してください。
 
 ## 何のためのシステムか
 
@@ -57,15 +57,15 @@ PM Ghost ── Yamada Ghost
 
 ## 「本当にそんなことができるのか？」への回答
 
-構想だけでなく、実際に AI が記憶（過去の会話・決定）と実装（ファイル・git 状態という SSoT）を突き合わせて検証してから答えている例を `idea.ja.md` 末尾に収録しています。
+構想だけでなく、実際に AI が記憶（過去の会話・決定）と実装（ファイル・git 状態という SSoT）を突き合わせて検証してから答えている例を `docs/idea.ja.md` 末尾に収録しています。
 
-- 短期記憶と長期ルーティンの統合想起（`images/recall-schedule.png`）
-- 記憶の再生ではなく grep・shell で再検証してから回答（`images/recall-investigation.png`）
-- 会話履歴なしに git 履歴だけから設計意図・採用理由を再構成（`images/repo-design-intent.png`）
+- 短期記憶と長期ルーティンの統合想起（`docs/images/recall-schedule.png`）
+- 記憶の再生ではなく grep・shell で再検証してから回答（`docs/images/recall-investigation.png`）
+- 会話履歴なしに git 履歴だけから設計意図・採用理由を再構成（`docs/images/repo-design-intent.png`）
 
 ## CLAUDE.md（大前提・DJCの出典）
 
-`idea.ja.md` 中の「大前提1」「大前提3 - DJC」等の注記は、このリポジトリ直下の [`CLAUDE.ja.md`](./CLAUDE.ja.md) にリンクしています。これは山田喜三郎のグローバル `~/.claude/CLAUDE.md` の実体コピーで、`_CLAUDE.md`（同ファイルへのシンボリックリンク、`.gitignore` 対象）から [`claude_md_sync.sh`](./claude_md_sync.sh) で同期しています。英語版正本 `CLAUDE.md` は同様に `~/.claude/CLAUDE.en.md`（`_CLAUDE.en.md`）から同期されます。git はシンボリックリンクをリンクのまま push してしまうため、リポジトリに含めて公開するのは同期後の実体です。
+`docs/idea.ja.md` 中の「大前提1」「大前提3 - DJC」等の注記は、[`docs/CLAUDE.ja.md`](./docs/CLAUDE.ja.md) にリンクしています。これは山田喜三郎のグローバル `~/.claude/CLAUDE.md` の実体コピーで、`docs/_CLAUDE.md`（同ファイルへのシンボリックリンク、`.gitignore` 対象）から [`tools/claude_md_sync.sh`](./tools/claude_md_sync.sh) で同期しています。英語版正本 `docs/CLAUDE.md` は同様に `~/.claude/CLAUDE.en.md`（`docs/_CLAUDE.en.md`）から同期されます。git はシンボリックリンクをリンクのまま push してしまうため、リポジトリに含めて公開するのは同期後の実体です。
 
 ## 使い方
 
@@ -120,4 +120,4 @@ $ ghost join dev-yamada.local work
 
 ## 現在の状態
 
-`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。設計の議論は `idea.ja.md` / `idea.md` を参照してください。
+`ghost initialize`、`ghost trust`、`ghost publish`、`ghost join`、`ghost ls`（セットアップ、tmux + SSHによるPTY共有の土台、mDNSによるLAN内発見）は実装済みです。設計の議論は `docs/idea.ja.md` / `docs/idea.md` を参照してください。

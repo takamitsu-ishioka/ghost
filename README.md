@@ -4,7 +4,7 @@ English | [日本語](./README.ja.md)
 
 **Even when the person isn't there, the ghost is.**
 
-Ghost is a concept-and-implementation repository for treating people, AI, knowledge, and work sessions as addressable "agents" on a LAN. See [`idea.md`](./idea.md) for the full story of how the idea developed.
+Ghost is a concept-and-implementation repository for treating people, AI, knowledge, and work sessions as addressable "agents" on a LAN. See [`docs/idea.md`](./docs/idea.md) for the full story of how the idea developed.
 
 ## What is this system for?
 
@@ -57,15 +57,15 @@ PM Ghost ── Yamada Ghost
 
 ## Answering "can it really do that?"
 
-This isn't just a concept — `idea.md` includes, at the end, real examples of the AI cross-checking memory (past conversations and decisions) against the implementation (files and git state, i.e. the SSoT) before answering.
+This isn't just a concept — `docs/idea.md` includes, at the end, real examples of the AI cross-checking memory (past conversations and decisions) against the implementation (files and git state, i.e. the SSoT) before answering.
 
-- Integrating short-term memory with a long-term routine (`images/recall-schedule.png`)
-- Re-verifying instead of just replaying memory, via grep/shell (`images/recall-investigation.png`)
-- Reconstructing design intent and rationale from git history alone, with no conversation history (`images/repo-design-intent.png`)
+- Integrating short-term memory with a long-term routine (`docs/images/recall-schedule.png`)
+- Re-verifying instead of just replaying memory, via grep/shell (`docs/images/recall-investigation.png`)
+- Reconstructing design intent and rationale from git history alone, with no conversation history (`docs/images/repo-design-intent.png`)
 
 ## CLAUDE.md (the source for "Core Premises" and DJC)
 
-The annotations in `idea.md` such as "Core Premise 1" and "Core Premise 3 - DJC" link to [`CLAUDE.md`](./CLAUDE.md) at the root of this repository. It's a real copy of the developer's global `~/.claude/CLAUDE.en.md` (the English translation of `~/.claude/CLAUDE.md`), synced from `_CLAUDE.en.md` (a symlink to that file, `.gitignore`d) via [`claude_md_sync.sh`](./claude_md_sync.sh). The Japanese original is likewise tracked as [`CLAUDE.ja.md`](./CLAUDE.ja.md), synced from `_CLAUDE.md`. Since git pushes a symlink as a symlink rather than its target's content, what actually ships in the repository is the synced copy, not the link itself.
+The annotations in `docs/idea.md` such as "Core Premise 1" and "Core Premise 3 - DJC" link to [`docs/CLAUDE.md`](./docs/CLAUDE.md). It's a real copy of the developer's global `~/.claude/CLAUDE.en.md` (the English translation of `~/.claude/CLAUDE.md`), synced from `docs/_CLAUDE.en.md` (a symlink to that file, `.gitignore`d) via [`tools/claude_md_sync.sh`](./tools/claude_md_sync.sh). The Japanese original is likewise tracked as [`docs/CLAUDE.ja.md`](./docs/CLAUDE.ja.md), synced from `docs/_CLAUDE.md`. Since git pushes a symlink as a symlink rather than its target's content, what actually ships in the repository is the synced copy, not the link itself.
 
 ## Usage
 
@@ -120,4 +120,4 @@ The underlying principle: a Ghost Client's *intent* when pressing a key should m
 
 ## Current status
 
-`ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented — see `idea.md` / `idea.ja.md` for the design discussion behind the project.
+`ghost initialize`, `ghost trust`, `ghost publish`, `ghost join`, and `ghost ls` (setup, the tmux + SSH PTY-sharing primitive, and mDNS-based LAN discovery) are implemented — see `docs/idea.md` / `docs/idea.ja.md` for the design discussion behind the project.
