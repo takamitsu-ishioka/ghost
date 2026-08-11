@@ -107,7 +107,8 @@ Example: initialize.sh
     - The functional description is taken from the run of comment lines starting at line 2 of the bash script
   - Whether it fails or succeeds, output "what to do next" to stderr.
 - Language/format conversion
-  - Preserve line breaks as much as possible. For example, when going Japanese markdown → English markdown → rendered view, line breaks that were originally there must be preserved.
+  - Preserve line breaks as much as possible. For example, when going Japanese markdown → English markdown → rendered view, line breaks that were originally there might be preserved.
+  - However, this does not apply if the Japanese version has already been committed.
   - For any markdown or image file containing natural language, as a general rule, produce both a Japanese version and an English version
   - The original is always Japanese
   - English is translated from Japanese
