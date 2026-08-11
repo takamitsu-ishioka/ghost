@@ -73,9 +73,9 @@ Ghostは一日で作られた。​
 
 はい。リンク先を開いて内容を確認します。​  
 
-> **https://github.com/takamitsu-ishioka/ghost/blob/master/README.ja.mdを検索中**
-> **3件のサイトを検索中**
-> **3件のウェブサイトを検索しました**
+> **https://github.com/takamitsu-ishioka/ghost/blob/master/README.ja.mdを検索中**  
+> **3件のサイトを検索中**  
+> **3件のウェブサイトを検索しました**  
 > 16s考えました​  
 
 通常なら読めますが、今回はGitHubへの直接アクセスが遮断されており、内容を取得できませんでした。​  
@@ -99,7 +99,7 @@ Chromeで直接アクセスできます。​
 
 クラウド側のChromeには接続できました。いまGitHubページの読み込み応答を待っています。先ほど「読めない」と断定したのは早計でした。​  
 
-> **GitHub READMEの内容を確認した**
+> **GitHub READMEの内容を確認した**  
 > 6s考えました​  
 
 はい、直接読めました（笑）。​  
@@ -1739,7 +1739,7 @@ flowchart TD​
 ためのコマンドを出す。​  
 
 ```bash​  
-git clone https://github.com/takamitsu-ishioka/ghost.git​  
+git clone https://github.com/takamitsu-ishioka/ghost.git​
 cd ghost​  
 codex​  
 ```
