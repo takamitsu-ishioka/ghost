@@ -401,7 +401,7 @@ Ghostの社会的な一行説明は、こちらかもしれません。​
 
 > Ghostを導入する必要はない。  
 > 必要なのは、次の三つだけである。​  
->​  
+> ​  
 > 1. 人の仕事を、AIが調査可能な形で残す  
 > 2. AIが記憶だけで答えず、SSoTを再検証する  
 > 3. 人間には、AIで解けなかった意思決定だけを渡す​  
@@ -1412,11 +1412,9 @@ Claude Codeでも、Codexでも、社内向けのAIエージェントでもよ�
 >​  
 > 2m 12s考えました​  
 
-![夜の無人オフィスを見つめるフクロウ](https://chatgpt.com/backend-api/estuary/content?id=file_00000000667082069161d9d854108e40&fn=%E5%A4%9C%E3%81%AE%E7%84%A1%E4%BA%BA%E3%82%AA%E3%83%95%E3%82%A3%E3%82%B9%E3%82%92%E8%A6%8B%E3%81%A4%E3%82%81%E3%82%8B%E3%83%95%E3%82%AF%E3%83%AD%E3%82%A6.png&cd=attachment&ts=496225&p=fs&cid=1&sig=9dcc1d63183a8ef1779ed6fd543d394b2252e2e790a7b409099de8eaa9540a1b&v=0)​  
+(夜の無人オフィスを見つめるフクロウの画像)  
 
 完成しました。指定どおり1280×670、モノトーンの細密描線です。​  
-
-[owl-night-office-1280x670.png](sandbox:/workspace/scratch/919c4d727794/owl-night-office-1280x670.png)​  
 
 ## 私：​  
 2026/8/11 4:03:16​  
