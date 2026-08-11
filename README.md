@@ -14,7 +14,7 @@ The Claude Code UI is, at its core, "a program that keeps receiving key events f
 
 2. **Connect to a knowledge space.**
       ```
-      $ claude-join <ghost-knowledge-space-name>
+      $ claude-join <server-host> <session-name>
       ```
       This command connects you to a "ghost (knowledge space)" made up of:
       - a specific repository
@@ -22,7 +22,7 @@ The Claude Code UI is, at its core, "a program that keeps receiving key events f
       - the developer's design philosophy
       - the developer's implementation rules
 
-      With a ghost, you can query someone even while they're on vacation, in a meeting, or after they've left the company.
+      With a ghost, you can query someone even while they're on vacation, on a business trip, in a meeting, or after they've left the company.
 
 3. **AI interviews AI.**
    For the PM to grasp status, the PM's agent interviews each member's ghost and aggregates progress and blockers — no human reporting required.
