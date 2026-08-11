@@ -1,5 +1,7 @@
 English | [日本語](./README.ja.md)
 
+<img width="1280" height="670" alt="510" src="https://github.com/user-attachments/assets/c2376c36-0c1e-4ad5-a3f4-00cb0e79a627" />
+
 # Ghost
 
 **Even when the person isn't there, the ghost is.**
