@@ -108,7 +108,8 @@ Example: initialize.sh
   - Whether it fails or succeeds, output "what to do next" to stderr.
 - Language/format conversion
   - Preserve line breaks as much as possible. For example, when going Japanese markdown → English markdown → rendered view, line breaks that were originally there must be preserved.
-  - For any document or image file containing natural language, always produce both a Japanese version and an English version
+  - For any markdown or image file containing natural language, as a general rule, produce both a Japanese version and an English version
+  - However, for Markdown files exceeding 1,000 lines, display a notification to the user, skip the file, and wait for the user to provide a manual translation.
   - However, the original is always Japanese
   - English is translated from Japanese
   - make push (makefile not yet implemented)
