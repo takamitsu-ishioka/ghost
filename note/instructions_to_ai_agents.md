@@ -1,5 +1,8 @@
 # note記事整形
 
+0. https://*chatgpt* など、ChatBot の中間生成物へのリンクを削除。  
+    説明のみ残す。  
+    例：(タイトル画像)  
 1. replace.sh bold,chatgpt,darp,me,spsp <マークダウンファイル>
 2. テーブルの画像化
 3. 文章を英訳
