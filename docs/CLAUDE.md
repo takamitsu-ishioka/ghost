@@ -84,6 +84,7 @@ and DJC replaces this with a mechanical convergence judgment.
   - Physical monolith, logical microservices
   - Manage the history of code, data, configuration (excluding confidential information), documentation, and tools all in git
   - However, data is limited to primary information. Other data gets a leading "_" in the filename and is ignored via .gitignore.
+  - Among document files, ones that contain instructions to agents are primary-source files, so editing them is forbidden unless explicitly specified in the prompt.
   - Do not share things that merely "can" be shared. Share only things that "have no choice but to" be shared.
   - Ensure idempotency.
   - Consolidate all the initialization steps needed to actually start using a repositoty into a single command.
@@ -107,6 +108,13 @@ Example: initialize.sh
   - Whether it fails or succeeds, output "what to do next" to stderr.
 - Language/format conversion
   - Preserve line breaks as much as possible. For example, when going Japanese markdown → English markdown → rendered view, line breaks that were originally there must be preserved.
+  - For any document or image file containing natural language, always produce both a Japanese version and an English version
+  - However, the original is always Japanese
+  - English is translated from Japanese
+  - make push (makefile not yet implemented)
+      - claude_md_sync.sh (exists)
+      - document_translate.sh (not yet implemented)
+  - Confirm there is no personal information
 
 ---
 
