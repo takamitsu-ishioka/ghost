@@ -65,7 +65,7 @@ Ghostは一日で作られた。​
 ## 私：​  
 2026/8/11 2:49:38​  
 
-https://github.com/takamitsu-ishioka/ghost/blob/master/README.ja.md​  
+[Ghost — README.ja.md](https://github.com/takamitsu-ishioka/ghost/blob/master/README.ja.md​)  
 読めますか？​  
 
 ## ChatGPT:​  
