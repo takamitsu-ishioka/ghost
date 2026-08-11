@@ -14,7 +14,7 @@ Claude Code の UI は本質的に「stdin からキーイベントを受け取�
 
 2. **知識空間に接続する**
       ```
-      $ claude-join <server-host> <session-name>
+      $ ghost join <server-host> <session-name>
       ```
       このコマンドで、
       - 特定リポジトリ

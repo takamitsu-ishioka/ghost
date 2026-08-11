@@ -14,7 +14,7 @@ The Claude Code UI is, at its core, "a program that keeps receiving key events f
 
 2. **Connect to a knowledge space.**
       ```
-      $ claude-join <server-host> <session-name>
+      $ ghost join <server-host> <session-name>
       ```
       This command connects you to a "ghost (knowledge space)" made up of:
       - a specific repository
