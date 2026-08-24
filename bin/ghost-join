@@ -1,10 +1,14 @@
 #!/bin/bash
 # 指定したホスト上の、指定したセッション名の tmux セッションに SSH 経由でアタッチする。
 # ghost-initialize が生成した ghost 専用鍵（~/.ssh/id_ed25519_ghost）を明示的に使う。
+# 接続先ユーザーは常に読み取り専用の ghost-claude-reader を明示する
+# （SSHクライアントのデフォルト挙動である「ローカルのユーザー名と同名で接続」に
+# 依存しない。ghost-trust が鍵を登録するのもこのアカウントの authorized_keys）。
 set -euo pipefail
 
 BASENAME="$(basename "$0")"
 KEY_PATH="$HOME/.ssh/id_ed25519_ghost"
+READER_USER="ghost-claude-reader"
 
 usage() {
   {
@@ -24,5 +28,5 @@ fi
 host="$1"
 session_name="$2"
 
-echo "joining: ssh -i $KEY_PATH -t $host tmux attach -t $session_name" >&2
-exec ssh -i "$KEY_PATH" -t "$host" "tmux attach -t $session_name"
+echo "joining: ssh -i $KEY_PATH -t $READER_USER@$host tmux attach -t $session_name" >&2
+exec ssh -i "$KEY_PATH" -t "$READER_USER@$host" "tmux attach -t $session_name"

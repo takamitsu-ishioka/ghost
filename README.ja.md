@@ -110,17 +110,17 @@ $ ghost join dev-yamada.local work
 
 引数なしで `ghost` を実行すると利用可能なサブコマンド一覧が表示されます。
 
-## 懸案事項
+## 懸案事項（優先度順）
 
-基本原則: Ghost Clientがキーを押したときの**意図**と、Ghost Serverの**実際の挙動**が一致すること。以下の2点は未解決です。
-
-- **送信キーの不一致**: Claude Codeのデフォルトの送信キーはEnterですが、*Ghost Server*側の `~/.tmux.conf` に
-  ```
-  set -s extended-keys on
-  set -as terminal-features 'xterm*:extkeys'
-  ```
-  が無いと、tmuxがEnterと修飾付きEnter（Alt+Enter、Shift+Enter）を同じバイト列に潰してしまい、Ghost Clientの「Enterを押した＝送信のつもり」という意図が共有中の`claude`プロセスに正しく伝わらないことがあります。これはサーバー側のtmux設定であり、クライアント側だけでは直せません。
-- **終了キーの不一致**: `ghost join` は現時点で、セッション内で実際に何が動いているか（例: `claude`はCtrl+D二回、`codex`はCtrl+D一回で終了）をGhost Clientに伝える手段がありません。`ghost publish` はまだ起動したコマンドを記録・広告していないため、どこにも表示されません。
+- **（対応済み）副作用の禁止**: 公開セッションは、owner自身のアカウントではなく専用の無権限アカウント`ghost-claude-reader`として動くようになりました。標準的なUnixファイル権限と、スコープを絞った読み取り専用POSIX ACLだけで、リポジトリは読めるが自分のホーム以外にはどこにも書き込めず、`git commit`/`push`もできず、権限昇格もできません — Claudeの判断ではなくOSが強制します。詳細は`docs/designs/ghost_implementation_plan_ja.md`を参照。
+- **（優先度: 低、未解決）** キーバインディングの不一致: 基本原則は、Ghost Clientがキーを押したときの**意図**と、Ghost Serverの**実際の挙動**が一致すること。
+  - **送信キーの不一致**: Claude Codeのデフォルトの送信キーはEnterですが、*Ghost Server*側の `~/.tmux.conf` に
+    ```
+    set -s extended-keys on
+    set -as terminal-features 'xterm*:extkeys'
+    ```
+    が無いと、tmuxがEnterと修飾付きEnter（Alt+Enter、Shift+Enter）を同じバイト列に潰してしまい、Ghost Clientの「Enterを押した＝送信のつもり」という意図が共有中の`claude`プロセスに正しく伝わらないことがあります。これはサーバー側のtmux設定であり、クライアント側だけでは直せません。
+  - **終了キーの不一致**: `ghost join` は現時点で、セッション内で実際に何が動いているか（例: `claude`はCtrl+D二回、`codex`はCtrl+D一回で終了）をGhost Clientに伝える手段がありません。`ghost publish` はまだ起動したコマンドを記録・広告していないため、どこにも表示されません。
 
 ## 現在の状態
 

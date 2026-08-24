@@ -4,6 +4,8 @@
 #   avahi-utils, libnss-mdns）のインストール
 # - このスクリプトのある bin/ を ~/.bashrc 経由で PATH に追加
 # - ghost専用のSSH鍵ペア（~/.ssh/id_ed25519_ghost）を生成
+# - 読み取り専用ユーザー ghost-claude-reader の作成とACL付与
+#   （ghost_reader_user_setup.sh、chrootは使わない）
 # 既に完了している項目はスキップする。
 set -euo pipefail
 
@@ -13,6 +15,7 @@ BASHRC="$HOME/.bashrc"
 PATH_MARKER="# added by ghost-initialize"
 PATH_LINE="export PATH=\"$SCRIPT_DIR:\$PATH\""
 KEY_PATH="$HOME/.ssh/id_ed25519_ghost"
+READER_USER="ghost-claude-reader"
 
 usage() {
   {
@@ -108,6 +111,8 @@ if [ "$key_already_done" -eq 0 ]; then
   ssh-keygen -t ed25519 -f "$KEY_PATH" -N "" -C "ghost" -q
   echo "$BASENAME: generated $KEY_PATH" >&2
 fi
+
+"$SCRIPT_DIR/ghost_reader_user_setup.sh" "$READER_USER"
 
 {
   echo ""

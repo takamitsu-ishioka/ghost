@@ -656,3 +656,17 @@ SSH 経由のリモート端末からの参加
 > 「既存 UNIX 機構ではなぜ解決できないか」
 
 を明示してから追加すること。
+
+---
+
+## 実装ログ
+
+**2026-08-24**: 18節の実装依頼に対し、当初は専用Unixユーザー + 最小chroot（許可リストに載ったバイナリとその共有ライブラリ閉包だけを含むrootfs、`ChrootDirectory`+`ForceCommand`のsshd設定、bind mountされたknowledgeビュー、iptablesによるegress制限）を詳細設計した。その後、Codex CLI版（`codex/`）の並行実装で、より単純な代替 — **chrootを使わず、専用Unixユーザー + POSIX ACLだけ**で同じ不変条件（16節）を満たす方式 — を先に実機実装・検証し、以下を確認した:
+
+- developerのホーム（`750`）への走査専用ACL付与とリポジトリ本体への再帰的読み取り専用ACL付与だけで、`~/.ssh`・`~/.claude`等の機密ディレクトリへは一切到達不能
+- `git commit`/`push`は`.git`への書き込み拒否により自然に失敗する（コマンド分類は不要 — 2.2〜2.3節の原則により忠実）
+- 実装量・検証量ともにchroot案より大幅に小さい
+
+この結果を受け、chroot案は破棄し、Unixユーザー + ACL方式に一本化した。詳細と実装済みの変更点は [ghost_implementation_plan_ja.md](ghost_implementation_plan_ja.md) を参照。アカウント名は `ghost-claude-reader` / `ghost-codex-reader`（読み取り専用、実装済み）、`ghost-claude-writer` / `ghost-codex-writer`（developer同等権限、名前のみ予約・未実装）。
+
+ネットワーク出口制限（9節）は今回のACL方式のスコープ外のまま — 今後の課題として残っている。

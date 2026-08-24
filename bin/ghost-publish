@@ -5,9 +5,15 @@
 # セッションは avahi (_ghost._tcp) 経由でLANに広告し、ghost ls から発見できるようにする。
 # 広告は同じtmuxセッション内の別windowでavahi-publishを実行することで
 # セッション自体のライフタイムに紐付ける（セッションが消えれば広告も自動的に消える）。
+# tmuxセッションとclaudeプロセスは読み取り専用ユーザー ghost-claude-reader として動く
+# （ghost_reader_user_setup.sh で作成済みが前提）。owner自身のアタッチも同じ制限区域に
+# 入る — Ghostを介さず制限なしのClaude Codeを使いたい場合は、素の claude を直接実行する。
 set -euo pipefail
 
 BASENAME="$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+READER_USER="ghost-claude-reader"
 
 usage() {
   {
@@ -38,15 +44,21 @@ if [ "$#" -gt 0 ]; then
   claude_args=("$@")
 fi
 
-if ! tmux has-session -t "$session_name" 2>/dev/null; then
-  echo "publishing: tmux new-session -d -s $session_name claude ${claude_args[*]}" >&2
-  tmux new-session -d -s "$session_name" claude "${claude_args[@]}"
+if ! id -u "$READER_USER" >/dev/null 2>&1; then
+  echo "$BASENAME: user $READER_USER does not exist" >&2
+  echo "Next: run bin/ghost_reader_user_setup.sh $READER_USER first." >&2
+  exit 1
 fi
 
-if ! tmux list-windows -t "$session_name" -F '#{window_name}' 2>/dev/null | grep -qx "ghost-advertise"; then
-  tmux new-window -d -t "$session_name" -n ghost-advertise \
+if ! sudo -u "$READER_USER" tmux has-session -t "$session_name" 2>/dev/null; then
+  echo "publishing: sudo -u $READER_USER tmux new-session -d -s $session_name -c $REPO_DIR claude ${claude_args[*]}" >&2
+  sudo -u "$READER_USER" tmux new-session -d -s "$session_name" -c "$REPO_DIR" claude "${claude_args[@]}"
+fi
+
+if ! sudo -u "$READER_USER" tmux list-windows -t "$session_name" -F '#{window_name}' 2>/dev/null | grep -qx "ghost-advertise"; then
+  sudo -u "$READER_USER" tmux new-window -d -t "$session_name" -n ghost-advertise \
     "avahi-publish -s '$session_name' _ghost._tcp 22"
   echo "advertising: avahi-publish -s $session_name _ghost._tcp 22 (mDNS, tied to this session)" >&2
 fi
 
-exec tmux attach -t "$session_name"
+exec sudo -u "$READER_USER" tmux attach -t "$session_name"

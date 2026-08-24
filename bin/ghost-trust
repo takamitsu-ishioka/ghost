@@ -1,11 +1,14 @@
 #!/bin/bash
 # 標準入力で受け取ったSSH公開鍵を、指定した名前のコメント付きで
-# ~/.ssh/authorized_keys に登録する（このホストをGhost Serverとして、
-# 相手の ghost join を受け入れる）。同じ鍵が既に登録済みならスキップする。
+# 読み取り専用ユーザー ghost-claude-reader の authorized_keys に登録する
+# （このホストをGhost Serverとして、相手の ghost join を受け入れる。
+# ゲストは developer 自身ではなく ghost-claude-reader としてログインする）。
+# 同じ鍵が既に登録済みならスキップする。
 set -euo pipefail
 
 BASENAME="$(basename "$0")"
-SSH_DIR="$HOME/.ssh"
+READER_USER="ghost-claude-reader"
+SSH_DIR="/home/$READER_USER/.ssh"
 AUTH_KEYS="$SSH_DIR/authorized_keys"
 
 usage() {
@@ -51,8 +54,15 @@ fi
 
 key_material="$(awk '{print $1, $2}' <<<"$key_line")"
 
+if ! id -u "$READER_USER" >/dev/null 2>&1; then
+  echo "$BASENAME: user $READER_USER does not exist" >&2
+  echo "Next: run bin/ghost_reader_user_setup.sh $READER_USER first." >&2
+  exit 1
+fi
+
 already=0
-if [ -f "$AUTH_KEYS" ] && grep -qF "$key_material" "$AUTH_KEYS"; then
+if sudo -u "$READER_USER" test -f "$AUTH_KEYS" \
+   && sudo -u "$READER_USER" grep -qF "$key_material" "$AUTH_KEYS"; then
   already=1
 fi
 
@@ -73,14 +83,11 @@ if [ "$dry_run" -eq 1 ]; then
   exit 0
 fi
 
-mkdir -p "$SSH_DIR"
-chmod 700 "$SSH_DIR"
-touch "$AUTH_KEYS"
-chmod 600 "$AUTH_KEYS"
+sudo -u "$READER_USER" mkdir -p "$SSH_DIR"
+sudo -u "$READER_USER" chmod 700 "$SSH_DIR"
+sudo -u "$READER_USER" touch "$AUTH_KEYS"
+sudo -u "$READER_USER" chmod 600 "$AUTH_KEYS"
 
-{
-  echo "# ghost: $name"
-  echo "$key_line"
-} >> "$AUTH_KEYS"
+printf '# ghost: %s\n%s\n' "$name" "$key_line" | sudo -u "$READER_USER" tee -a "$AUTH_KEYS" >/dev/null
 
-echo "$BASENAME: added $name's key to $AUTH_KEYS -- this host will now accept 'ghost join' from $name" >&2
+echo "$BASENAME: added $name's key to $AUTH_KEYS -- this host will now accept 'ghost join <this host> <session>' from $name, landing in $READER_USER" >&2
