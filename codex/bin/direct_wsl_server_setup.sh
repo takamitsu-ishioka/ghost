@@ -112,7 +112,12 @@ fi
   echo "AllowUsers $READER_USER"
 } | sudo tee "$SSHD_DROP_IN" >/dev/null
 
-sudo sshd -t
+# Not "sudo sshd -t" here: ssh.service's own unit already declares
+# RuntimeDirectory=sshd (creates /run/sshd, wiped on every WSL restart since
+# /run is tmpfs) and ExecStartPre=/usr/sbin/sshd -t, so it does the same
+# config check with the right runtime directory in place; a manual
+# out-of-band "sshd -t" fails here with "Missing privilege separation
+# directory: /run/sshd" because it never gets that directory.
 sudo systemctl enable --now ssh
 
 echo "$BASENAME: setup complete" >&2
