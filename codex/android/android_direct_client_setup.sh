@@ -11,33 +11,52 @@ COMMAND_PATH="$BIN_DIR/ghost_codex_direct"
 usage() {
   {
     echo "$BASENAME: $1"
-    echo "usage: $BASENAME <wsl_host> <ssh_port> <wsl_user> <remote_script> <working_directory> <session_name> [--dry-run]"
-    echo "example: $BASENAME 192.168.10.5 2222 developer /home/developer/ghost/codex/bin/codex_remote_publish.sh /home/developer/ghost/codex codex"
+    echo "usage: $BASENAME [--dry-run]"
+    echo "       $BASENAME <wsl_host> <ssh_port> <wsl_user> <remote_script> <working_directory> <session_name> [--dry-run]"
+    echo "example: $BASENAME"
     echo
     awk 'NR>1 && /^#/{sub(/^# ?/,""); print; next} NR>1{exit}' "$0"
   } >&2
 }
 
-if [ "$#" -lt 6 ] || [ "$#" -gt 7 ]; then
-  usage "Wrong number of arguments"
-  exit 1
-fi
-
-wsl_host="$1"
-ssh_port="$2"
-wsl_user="$3"
-remote_script="$4"
-working_directory="$5"
-session_name="$6"
+wsl_host="192.168.10.5"
+ssh_port="2222"
+wsl_user="ghost-codex-reader"
+remote_script="/home/developer/ghost/codex/bin/codex_remote_publish.sh"
+working_directory="/home/developer/ghost"
+session_name="codex"
 dry_run=0
 
-if [ "$#" -eq 7 ]; then
-  if [ "$7" != "--dry-run" ]; then
-    usage "Unknown option: $7"
+case "$#" in
+  0) ;;
+  1)
+    if [ "$1" = "--dry-run" ]; then
+      dry_run=1
+    else
+      usage "Unknown option: $1"
+      exit 1
+    fi
+    ;;
+  6|7)
+    wsl_host="$1"
+    ssh_port="$2"
+    wsl_user="$3"
+    remote_script="$4"
+    working_directory="$5"
+    session_name="$6"
+    if [ "$#" -eq 7 ]; then
+      if [ "$7" != "--dry-run" ]; then
+        usage "Unknown option: $7"
+        exit 1
+      fi
+      dry_run=1
+    fi
+    ;;
+  *)
+    usage "Wrong number of arguments"
     exit 1
-  fi
-  dry_run=1
-fi
+    ;;
+esac
 
 for value in "$wsl_host" "$wsl_user" "$session_name"; do
   if [[ ! "$value" =~ ^[A-Za-z0-9_.-]+$ ]]; then
@@ -58,7 +77,7 @@ for path in "$remote_script" "$working_directory"; do
   fi
 done
 
-if [ ! -f "$KEY_PATH" ]; then
+if [ "$dry_run" -eq 0 ] && [ ! -f "$KEY_PATH" ]; then
   echo "$BASENAME: Android private key does not exist: $KEY_PATH" >&2
   echo "Next: run android_client_setup.sh once to generate the device key." >&2
   exit 1
